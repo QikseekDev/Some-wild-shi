@@ -37,8 +37,21 @@ body {
     width: 100%;
     height: 100%;
     display: block;
+}
+
+#drawCanvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    z-index: 10;
     touch-action: none;
-    cursor: default;
+    cursor: crosshair;
+}
+
+#drawCanvas.open {
+    display: block;
 }
 
 /* ============================================================
@@ -53,7 +66,7 @@ body {
     left: 50%;
     transform: translateX(-50%);
 
-    width: min(760px, calc(100vw - 16px));
+    width: min(800px, calc(100vw - 16px));
 
     padding: 6px;
 
@@ -116,11 +129,6 @@ button:disabled {
     cursor: default;
 }
 
-button.active {
-    background: #777;
-    border-color: #aaa;
-}
-
 select {
     min-height: 27px;
     padding: 2px 7px;
@@ -129,12 +137,9 @@ select {
 input[type="number"] {
     width: 65px;
     min-height: 27px;
-
     padding: 3px 6px;
-
     color: white;
     background: #444;
-
     border: 1px solid #707070;
     border-radius: 3px;
 }
@@ -142,6 +147,15 @@ input[type="number"] {
 input[type="range"] {
     width: 130px;
     accent-color: #aaa;
+}
+
+input[type="color"] {
+    width: 32px;
+    height: 27px;
+    padding: 1px;
+    border: 1px solid #707070;
+    border-radius: 3px;
+    background: #444;
 }
 
 .spacer {
@@ -159,10 +173,6 @@ input[type="range"] {
     color: #aaa;
     font-variant-numeric: tabular-nums;
 }
-
-/* ============================================================
-   IMAGE BUTTONS
-   ============================================================ */
 
 .image-button {
     display: flex;
@@ -184,8 +194,10 @@ input[type="range"] {
 
 #advanced {
     display: none;
+
     margin-top: 5px;
     padding-top: 5px;
+
     border-top: 1px solid rgba(255,255,255,.08);
 }
 
@@ -193,38 +205,52 @@ input[type="range"] {
     display: block;
 }
 
-#advanced .row {
-    justify-content: flex-start;
+/* ============================================================
+   PROGRESS
+   ============================================================ */
+
+#progressContainer {
+    width: 100%;
+    height: 5px;
+
+    margin-top: 6px;
+
+    background: #292929;
+
+    border-radius: 3px;
+
+    overflow: hidden;
+}
+
+#progressBar {
+    width: 0%;
+    height: 100%;
+
+    background: #aaa;
+
+    transition: width .04s linear;
 }
 
 /* ============================================================
-   DRAW CONTROLS
+   DRAWING PANEL
    ============================================================ */
 
-#drawControls {
+#drawTools {
     display: none;
+
+    margin-top: 5px;
+    padding-top: 5px;
+
+    border-top: 1px solid rgba(255,255,255,.08);
 }
 
-#drawControls.open {
-    display: flex;
+#drawTools.open {
+    display: block;
 }
 
-#brushSize {
-    width: 90px;
-}
-
-#brushColor {
-    width: 30px;
-    height: 27px;
-    padding: 1px;
-    border: 1px solid #707070;
-    background: #444;
-    cursor: pointer;
-}
-
-#drawStatus {
+.draw-indicator {
     color: #aaa;
-    white-space: nowrap;
+    font-size: 11px;
 }
 
 /* ============================================================
@@ -277,6 +303,7 @@ input[type="range"] {
     justify-content: center;
 
     background: #222;
+
     overflow: hidden;
 }
 
@@ -337,8 +364,7 @@ input[type="range"] {
 
     text-decoration: none;
 
-    transition:
-        transform .15s;
+    transition: transform .15s;
 }
 
 .link:hover {
@@ -375,10 +401,6 @@ input[type="range"] {
         left: 12px;
         bottom: 12px;
     }
-
-    #drawStatus {
-        display: none;
-    }
 }
 </style>
 </head>
@@ -386,27 +408,18 @@ input[type="range"] {
 <body>
 
 <canvas id="canvas"></canvas>
-
-<!-- ============================================================
-     CONTROLS
-     ============================================================ -->
+<canvas id="drawCanvas"></canvas>
 
 <div id="controls">
 
     <div class="row">
 
-        <button
-            id="sourceButton"
-            class="image-button"
-        >
+        <button id="sourceButton" class="image-button">
             <img id="sourcePreview">
             <span>source</span>
         </button>
 
-        <button
-            id="targetButton"
-            class="image-button"
-        >
+        <button id="targetButton" class="image-button">
             <img id="targetPreview">
             <span>target</span>
         </button>
@@ -419,11 +432,11 @@ input[type="range"] {
             crop
         </button>
 
-        <div class="spacer"></div>
-
         <button id="drawButton">
             draw
         </button>
+
+        <div class="spacer"></div>
 
         <button id="play">
             ▶
@@ -453,44 +466,57 @@ input[type="range"] {
 
     </div>
 
-    <div
-        id="drawControls"
-        class="row"
-    >
+    <div id="progressContainer">
+        <div id="progressBar"></div>
+    </div>
 
-        <span class="label">
-            brush
-        </span>
+    <div id="drawTools">
 
-        <input
-            id="brushSize"
-            type="range"
-            min="1"
-            max="12"
-            step="1"
-            value="3"
-        >
+        <div class="row">
 
-        <span
-            id="brushSizeValue"
-            class="value"
-        >
-            3
-        </span>
+            <span class="label">
+                color
+            </span>
 
-        <input
-            id="brushColor"
-            type="color"
-            value="#ffffff"
-        >
+            <input
+                id="drawColor"
+                type="color"
+                value="#ffffff"
+            >
 
-        <button id="clearDrawing">
-            clear
-        </button>
+            <span class="label">
+                brush
+            </span>
 
-        <span id="drawStatus">
-            draw on the image
-        </span>
+            <input
+                id="brushSize"
+                type="range"
+                min="1"
+                max="40"
+                step="1"
+                value="5"
+            >
+
+            <span
+                id="brushValue"
+                class="value"
+            >
+                5
+            </span>
+
+            <button id="clearDrawing">
+                clear
+            </button>
+
+            <button id="useDrawing">
+                use drawing
+            </button>
+
+            <span class="draw-indicator">
+                drawing source
+            </span>
+
+        </div>
 
     </div>
 
@@ -560,10 +586,6 @@ input[type="range"] {
     </div>
 
 </div>
-
-<!-- ============================================================
-     CROP WINDOW
-     ============================================================ -->
 
 <div id="cropOverlay">
 
@@ -647,10 +669,6 @@ input[type="range"] {
     </div>
 
 </div>
-
-<!-- ============================================================
-     LINKS
-     ============================================================ -->
 
 <div id="links">
 
@@ -747,6 +765,14 @@ const ctx =
         alpha: false
     });
 
+const drawCanvas =
+    document.getElementById("drawCanvas");
+
+const drawCtx =
+    drawCanvas.getContext("2d", {
+        alpha: false
+    });
+
 const sourceFile =
     document.getElementById("sourceFile");
 
@@ -771,23 +797,21 @@ const proximityValue =
 const algorithmInput =
     document.getElementById("algorithm");
 
-const drawButton =
-    document.getElementById("drawButton");
+const progressBar =
+    document.getElementById("progressBar");
 
-const drawControls =
-    document.getElementById("drawControls");
+const drawColor =
+    document.getElementById("drawColor");
 
 const brushSize =
     document.getElementById("brushSize");
 
-const brushSizeValue =
-    document.getElementById("brushSizeValue");
+const brushValue =
+    document.getElementById("brushValue");
 
-const brushColor =
-    document.getElementById("brushColor");
+const drawTools =
+    document.getElementById("drawTools");
 
-const clearDrawing =
-    document.getElementById("clearDrawing");
 
 /* ============================================================
    STATE
@@ -802,45 +826,22 @@ let targetCanvas = null;
 let particles = [];
 
 let playing = false;
-
 let progress = 0;
 
 let animationStart = 0;
-
 let animationFrame = null;
 
 let cropMode = null;
 let cropImage = null;
 
-let drawMode = false;
 let drawing = false;
 
-let lastDrawX = null;
-let lastDrawY = null;
+let drawingDirty = false;
+let drawingRebuildQueued = false;
 
-/*
- * Separate 512x512 canvas containing the user's drawing.
- *
- * This is deliberately kept separate from the original
- * source canvas so the source image itself is not destroyed.
- */
-const drawingCanvas =
-    document.createElement("canvas");
+let lastDrawX = 0;
+let lastDrawY = 0;
 
-drawingCanvas.width = 512;
-drawingCanvas.height = 512;
-
-const drawingCtx =
-    drawingCanvas.getContext("2d", {
-        willReadFrequently: true
-    });
-
-drawingCtx.clearRect(
-    0,
-    0,
-    512,
-    512
-);
 
 /* ============================================================
    DEFAULT SOURCE
@@ -887,6 +888,7 @@ function createDefaultSource() {
 
     return c;
 }
+
 
 /* ============================================================
    FALLBACK TARGET
@@ -1009,85 +1011,89 @@ function createFallbackObama() {
     return c;
 }
 
+
 /* ============================================================
    IMAGE LOADING
    ============================================================ */
 
 function loadFile(file) {
 
-    return new Promise((resolve, reject) => {
+    return new Promise(
+        (resolve, reject) => {
 
-        if (
-            !file ||
-            !file.type.startsWith("image/")
-        ) {
+            if (
+                !file ||
+                !file.type.startsWith("image/")
+            ) {
 
-            reject(
-                new Error(
-                    "Invalid image"
-                )
-            );
+                reject(
+                    new Error(
+                        "Invalid image"
+                    )
+                );
 
-            return;
+                return;
+            }
+
+            const url =
+                URL.createObjectURL(file);
+
+            const img =
+                new Image();
+
+            img.onload = () => {
+
+                URL.revokeObjectURL(url);
+
+                resolve(img);
+            };
+
+            img.onerror = () => {
+
+                URL.revokeObjectURL(url);
+
+                reject(
+                    new Error(
+                        "Could not load image"
+                    )
+                );
+            };
+
+            img.src =
+                url;
         }
-
-        const url =
-            URL.createObjectURL(file);
-
-        const img =
-            new Image();
-
-        img.onload = () => {
-
-            URL.revokeObjectURL(
-                url
-            );
-
-            resolve(img);
-        };
-
-        img.onerror = () => {
-
-            URL.revokeObjectURL(
-                url
-            );
-
-            reject(
-                new Error(
-                    "Could not load image"
-                )
-            );
-        };
-
-        img.src =
-            url;
-    });
+    );
 }
+
 
 function loadURL(url) {
 
-    return new Promise((resolve, reject) => {
+    return new Promise(
+        (resolve, reject) => {
 
-        const img =
-            new Image();
+            const img =
+                new Image();
 
-        img.crossOrigin =
-            "anonymous";
+            img.crossOrigin =
+                "anonymous";
 
-        img.onload = () =>
-            resolve(img);
+            img.onload =
+                () => resolve(img);
 
-        img.onerror = () =>
-            reject(
-                new Error(
-                    "Could not load image"
-                )
-            );
+            img.onerror =
+                () =>
+                    reject(
+                        new Error(
+                            "Could not load image"
+                        )
+                    );
 
-        img.src =
-            url;
-    });
+            img.src =
+                url;
+        }
+    );
 }
+
 
 /* ============================================================
    SQUARE CROP
@@ -1124,16 +1130,25 @@ function makeSquare(
         height - visible;
 
     const sx =
-        maxX * offsetX;
+        Math.max(
+            0,
+            maxX * offsetX
+        );
 
     const sy =
-        maxY * offsetY;
+        Math.max(
+            0,
+            maxY * offsetY
+        );
 
     const c =
         document.createElement("canvas");
 
-    c.width = 512;
-    c.height = 512;
+    c.width =
+        512;
+
+    c.height =
+        512;
 
     const x =
         c.getContext("2d");
@@ -1156,6 +1171,7 @@ function makeSquare(
     return c;
 }
 
+
 /* ============================================================
    PREVIEW
    ============================================================ */
@@ -1171,6 +1187,7 @@ function updatePreview(
             .85
         );
 }
+
 
 /* ============================================================
    RESIZE
@@ -1209,6 +1226,31 @@ function resizeCanvas() {
         0
     );
 
+    drawCanvas.width =
+        Math.round(
+            innerWidth * dpr
+        );
+
+    drawCanvas.height =
+        Math.round(
+            innerHeight * dpr
+        );
+
+    drawCanvas.style.width =
+        innerWidth + "px";
+
+    drawCanvas.style.height =
+        innerHeight + "px";
+
+    drawCtx.setTransform(
+        dpr,
+        0,
+        0,
+        dpr,
+        0,
+        0
+    );
+
     draw();
 }
 
@@ -1220,20 +1262,498 @@ window.addEventListener(
     }
 );
 
+
+/* ============================================================
+   DRAWING CANVAS
+   ============================================================ */
+
+function setupDrawingCanvas() {
+
+    drawCtx.clearRect(
+        0,
+        0,
+        innerWidth,
+        innerHeight
+    );
+
+    drawCtx.fillStyle =
+        "#404040";
+
+    drawCtx.fillRect(
+        0,
+        0,
+        innerWidth,
+        innerHeight
+    );
+
+    if (!sourceCanvas)
+        return;
+
+    const size =
+        Math.min(
+            innerWidth,
+            innerHeight
+        ) * .86;
+
+    const left =
+        (innerWidth - size) / 2;
+
+    const top =
+        (innerHeight - size) / 2;
+
+    drawCtx.imageSmoothingEnabled =
+        true;
+
+    drawCtx.drawImage(
+        sourceCanvas,
+        left,
+        top,
+        size,
+        size
+    );
+}
+
+
+/* ============================================================
+   DRAWING COORDINATES
+   ============================================================ */
+
+function screenToImage(
+    clientX,
+    clientY
+) {
+
+    const size =
+        Math.min(
+            innerWidth,
+            innerHeight
+        ) * .86;
+
+    const left =
+        (innerWidth - size) / 2;
+
+    const top =
+        (innerHeight - size) / 2;
+
+    return {
+
+        x:
+            (clientX - left) *
+            512 /
+            size,
+
+        y:
+            (clientY - top) *
+            512 /
+            size
+    };
+}
+
+
+/* ============================================================
+   DRAWING BRUSH
+   ============================================================ */
+
+function drawBrush(
+    x,
+    y
+) {
+
+    if (
+        x < 0 ||
+        y < 0 ||
+        x > 512 ||
+        y > 512
+    )
+        return;
+
+    const size =
+        Number(
+            brushSize.value
+        ) || 5;
+
+    const displaySize =
+        Math.min(
+            innerWidth,
+            innerHeight
+        ) * .86;
+
+    const scale =
+        displaySize / 512;
+
+    const radius =
+        Math.max(
+            1,
+            size * scale / 2
+        );
+
+    const px =
+        (
+            (innerWidth -
+            displaySize) / 2
+        ) +
+        x * scale;
+
+    const py =
+        (
+            (innerHeight -
+            displaySize) / 2
+        ) +
+        y * scale;
+
+    drawCtx.fillStyle =
+        drawColor.value;
+
+    drawCtx.beginPath();
+
+    drawCtx.arc(
+        px,
+        py,
+        radius,
+        0,
+        Math.PI * 2
+    );
+
+    drawCtx.fill();
+
+    drawingDirty =
+        true;
+
+    queueRealtimeSourceUpdate();
+}
+
+
+/* ============================================================
+   SMOOTH BRUSH LINE
+   ============================================================ */
+
+function drawLine(
+    x1,
+    y1,
+    x2,
+    y2
+) {
+
+    const distance =
+        Math.hypot(
+            x2 - x1,
+            y2 - y1
+        );
+
+    const size =
+        Number(
+            brushSize.value
+        ) || 5;
+
+    const steps =
+        Math.max(
+            1,
+            Math.ceil(
+                distance /
+                Math.max(
+                    1,
+                    size * .35
+                )
+            )
+        );
+
+    for (
+        let i = 0;
+        i <= steps;
+        i++
+    ) {
+
+        const t =
+            i / steps;
+
+        drawBrush(
+            x1 +
+            (x2 - x1) * t,
+
+            y1 +
+            (y2 - y1) * t
+        );
+    }
+}
+
+
+/* ============================================================
+   POINTER DRAWING
+   ============================================================ */
+
+drawCanvas.addEventListener(
+    "pointerdown",
+    event => {
+
+        if (
+            !drawCanvas.classList.contains("open")
+        )
+            return;
+
+        event.preventDefault();
+
+        drawing =
+            true;
+
+        drawCanvas.setPointerCapture(
+            event.pointerId
+        );
+
+        const p =
+            screenToImage(
+                event.clientX,
+                event.clientY
+            );
+
+        lastDrawX =
+            p.x;
+
+        lastDrawY =
+            p.y;
+
+        drawBrush(
+            p.x,
+            p.y
+        );
+    }
+);
+
+
+drawCanvas.addEventListener(
+    "pointermove",
+    event => {
+
+        if (!drawing)
+            return;
+
+        event.preventDefault();
+
+        const p =
+            screenToImage(
+                event.clientX,
+                event.clientY
+            );
+
+        drawLine(
+            lastDrawX,
+            lastDrawY,
+            p.x,
+            p.y
+        );
+
+        lastDrawX =
+            p.x;
+
+        lastDrawY =
+            p.y;
+    }
+);
+
+
+function stopDrawing(event) {
+
+    drawing =
+        false;
+
+    try {
+
+        if (
+            event &&
+            drawCanvas.hasPointerCapture(
+                event.pointerId
+            )
+        ) {
+
+            drawCanvas.releasePointerCapture(
+                event.pointerId
+            );
+        }
+
+    } catch {}
+}
+
+
+drawCanvas.addEventListener(
+    "pointerup",
+    stopDrawing
+);
+
+drawCanvas.addEventListener(
+    "pointercancel",
+    stopDrawing
+);
+
+drawCanvas.addEventListener(
+    "pointerleave",
+    event => {
+
+        if (
+            drawing &&
+            event.pointerType === "mouse"
+        )
+            drawing = false;
+    }
+);
+
+
+/* ============================================================
+   DRAWING → SOURCE
+   ============================================================ */
+
+function drawingSourceImageToDrawing() {
+
+    if (!drawCanvas)
+        return;
+
+    const c =
+        document.createElement("canvas");
+
+    c.width =
+        512;
+
+    c.height =
+        512;
+
+    const x =
+        c.getContext("2d", {
+            willReadFrequently: true
+        });
+
+    const size =
+        Math.min(
+            innerWidth,
+            innerHeight
+        ) * .86;
+
+    const left =
+        (innerWidth - size) / 2;
+
+    const top =
+        (innerHeight - size) / 2;
+
+    /*
+     * Copy only the image area.
+     * The surrounding UI/background is not
+     * allowed to become part of the source.
+     */
+
+    x.fillStyle =
+        "#404040";
+
+    x.fillRect(
+        0,
+        0,
+        512,
+        512
+    );
+
+    x.imageSmoothingEnabled =
+        true;
+
+    x.drawImage(
+        drawCanvas,
+        left,
+        top,
+        size,
+        size,
+        0,
+        0,
+        512,
+        512
+    );
+
+    sourceCanvas =
+        c;
+
+    sourceImage =
+        null;
+
+    updatePreview(
+        sourceCanvas,
+        sourcePreview
+    );
+
+    particles =
+        [];
+
+    progress =
+        0;
+
+    setProgress(
+        0
+    );
+
+    draw();
+
+    drawingDirty =
+        false;
+}
+
+
+/* ============================================================
+   REALTIME DRAWING SOURCE UPDATE
+   ============================================================ */
+
+function queueRealtimeSourceUpdate() {
+
+    if (drawingRebuildQueued)
+        return;
+
+    drawingRebuildQueued =
+        true;
+
+    requestAnimationFrame(
+        () => {
+
+            drawingRebuildQueued =
+                false;
+
+            if (!drawingDirty)
+                return;
+
+            drawingSourceImageToDrawing();
+
+            /*
+             * If an animation is currently running,
+             * rebuild the particle mapping from the
+             * new drawing and keep the current progress.
+             */
+
+            if (
+                playing &&
+                targetCanvas
+            ) {
+
+                buildPixels();
+
+                draw(progress);
+            }
+        }
+    );
+}
+
+
 /* ============================================================
    COLOR DISTANCE
    ============================================================ */
 
-function colorDistance(a, b) {
+function colorDistance(
+    r1,
+    g1,
+    b1,
+    r2,
+    g2,
+    b2
+) {
 
     const dr =
-        a.r - b.r;
+        r1 - r2;
 
     const dg =
-        a.g - b.g;
+        g1 - g2;
 
     const db =
-        a.b - b.b;
+        b1 - b2;
 
     return (
         dr * dr +
@@ -1242,8 +1762,9 @@ function colorDistance(a, b) {
     );
 }
 
+
 /* ============================================================
-   BUILD PIXELS
+   PIXEL BUILD
    ============================================================ */
 
 function buildPixels() {
@@ -1275,41 +1796,56 @@ function buildPixels() {
 
     const sourceData =
         sourceCanvas
-            .getContext("2d", {
-                willReadFrequently: true
-            })
+            .getContext(
+                "2d",
+                {
+                    willReadFrequently: true
+                }
+            )
             .getImageData(
                 0,
                 0,
                 512,
                 512
-            ).data;
+            )
+            .data;
 
     const targetData =
         targetCanvas
-            .getContext("2d", {
-                willReadFrequently: true
-            })
+            .getContext(
+                "2d",
+                {
+                    willReadFrequently: true
+                }
+            )
             .getImageData(
                 0,
                 0,
                 512,
                 512
-            ).data;
+            )
+            .data;
 
     const step =
         512 / resolution;
 
+    const total =
+        resolution *
+        resolution;
+
     const source =
-        [];
+        new Array(total);
 
     const target =
-        [];
+        new Array(total);
+
 
     /*
-     * Sample both images at exactly the same
-     * grid positions.
+     * Read all pixels once.
      */
+
+    let index =
+        0;
 
     for (
         let y = 0;
@@ -1327,7 +1863,8 @@ function buildPixels() {
                 Math.min(
                     511,
                     Math.floor(
-                        (x + .5) * step
+                        (x + .5) *
+                        step
                     )
                 );
 
@@ -1335,271 +1872,292 @@ function buildPixels() {
                 Math.min(
                     511,
                     Math.floor(
-                        (y + .5) * step
+                        (y + .5) *
+                        step
                     )
                 );
 
-            const index =
+            const dataIndex =
                 (
                     py * 512 +
                     px
                 ) * 4;
 
-            source.push({
+            const r =
+                sourceData[dataIndex];
 
-                x: x + .5,
-                y: y + .5,
+            const g =
+                sourceData[
+                    dataIndex + 1
+                ];
 
-                r:
-                    sourceData[index],
+            const b =
+                sourceData[
+                    dataIndex + 2
+                ];
 
-                g:
-                    sourceData[index + 1],
+            source[index] = {
 
-                b:
-                    sourceData[index + 2]
-            });
+                x:
+                    x + .5,
 
-            target.push({
+                y:
+                    y + .5,
 
-                x: x + .5,
-                y: y + .5,
+                r,
+                g,
+                b,
 
-                r:
-                    targetData[index],
+                brightness:
+                    (
+                        r +
+                        g +
+                        b
+                    ) / 3,
 
-                g:
-                    targetData[index + 1],
+                index
+            };
 
-                b:
-                    targetData[index + 2]
-            });
+            const tr =
+                targetData[dataIndex];
+
+            const tg =
+                targetData[
+                    dataIndex + 1
+                ];
+
+            const tb =
+                targetData[
+                    dataIndex + 2
+                ];
+
+            target[index] = {
+
+                x:
+                    x + .5,
+
+                y:
+                    y + .5,
+
+                r: tr,
+                g: tg,
+                b: tb,
+
+                brightness:
+                    (
+                        tr +
+                        tg +
+                        tb
+                    ) / 3,
+
+                index,
+
+                used: false
+            };
+
+            index++;
         }
     }
+
+
+    /*
+     * Brightness sorting gives the same general
+     * pixel-to-pixel structure without doing an
+     * expensive full N² matching operation.
+     */
+
+    source.sort(
+        (a, b) =>
+            a.brightness -
+            b.brightness
+    );
+
+    target.sort(
+        (a, b) =>
+            a.brightness -
+            b.brightness
+    );
+
 
     const proximity =
-        Number(
-            proximityInput.value
+        Math.max(
+            0,
+            Math.min(
+                1,
+                Number(
+                    proximityInput.value
+                ) || 0
+            )
         );
 
+
     /*
-     * Instead of copying target colors into particles,
-     * target pixels ONLY determine destinations.
+     * Number of local swaps/refinements.
+     *
+     * Fast mode intentionally performs very little
+     * work because this function can be called while
+     * drawing.
      */
 
-    const sortedSource =
-        source
-            .map(
-                (pixel, index) => ({
-                    pixel,
-                    index,
+    const iterations =
+        algorithmInput.value === "fast"
+            ? 1
+            : 4;
 
-                    brightness:
-                        (
-                            pixel.r +
-                            pixel.g +
-                            pixel.b
-                        ) / 3
-                })
-            )
-            .sort(
-                (a, b) =>
-                    a.brightness -
-                    b.brightness
-            );
 
-    const sortedTarget =
-        target
-            .map(
-                (pixel, index) => ({
-                    pixel,
-                    index,
-
-                    brightness:
-                        (
-                            pixel.r +
-                            pixel.g +
-                            pixel.b
-                        ) / 3
-                })
-            )
-            .sort(
-                (a, b) =>
-                    a.brightness -
-                    b.brightness
-            );
+    /*
+     * Initial brightness assignment.
+     */
 
     const assignments =
-        new Array(
-            source.length
-        );
+        new Array(total);
 
     for (
         let i = 0;
-        i < sortedSource.length;
+        i < total;
         i++
     ) {
-
-        const sourceEntry =
-            sortedSource[i];
-
-        const targetEntry =
-            sortedTarget[i];
 
         assignments[
-            sourceEntry.index
+            source[i].index
         ] =
-            targetEntry.pixel;
+            target[i];
     }
 
+
     /*
-     * A full optimal search at high resolutions is
-     * extremely expensive. The fast/optimal modes therefore
-     * use bounded candidate searches.
+     * Local refinement.
+     *
+     * Instead of searching every target pixel,
+     * only inspect a small neighborhood around
+     * the brightness-matched position.
      */
 
-    const candidatesPerPixel =
+    const windowSize =
         algorithmInput.value === "fast"
-            ? 16
-            : Math.min(
-                100,
-                target.length
-            );
+            ? 5
+            : 14;
 
-    /*
-     * Cache brightness ordering rather than sorting the
-     * entire target array for every source pixel.
-     */
 
     for (
-        let i = 0;
-        i < source.length;
-        i++
+        let pass = 0;
+        pass < iterations;
+        pass++
     ) {
 
-        const p =
-            source[i];
-
-        let best =
-            assignments[i];
-
-        let bestScore =
-            Infinity;
-
-        const targetBrightness =
-            (
-                p.r +
-                p.g +
-                p.b
-            ) / 3;
-
-        /*
-         * Find the closest brightness range using binary
-         * search, then inspect candidates around it.
-         */
-
-        let lo = 0;
-        let hi = sortedTarget.length;
-
-        while (lo < hi) {
-
-            const mid =
-                (lo + hi) >> 1;
-
-            if (
-                sortedTarget[mid].brightness <
-                targetBrightness
-            ) {
-
-                lo =
-                    mid + 1;
-
-            } else {
-
-                hi =
-                    mid;
-            }
-        }
-
-        const half =
-            Math.floor(
-                candidatesPerPixel / 2
-            );
-
-        const start =
-            Math.max(
-                0,
-                lo - half
-            );
-
-        const end =
-            Math.min(
-                sortedTarget.length,
-                start +
-                candidatesPerPixel
-            );
-
         for (
-            let j = start;
-            j < end;
-            j++
+            let i = 0;
+            i < total;
+            i++
         ) {
 
-            const q =
-                sortedTarget[j].pixel;
+            const p =
+                source[i];
 
-            const distance =
-                colorDistance(
-                    p,
-                    q
+            const current =
+                assignments[
+                    p.index
+                ];
+
+            const center =
+                Math.round(
+                    (
+                        current.index
+                    )
                 );
 
-            const dx =
-                p.x - q.x;
+            let best =
+                current;
 
-            const dy =
-                p.y - q.y;
+            let bestScore =
+                Infinity;
 
-            const spatial =
-                dx * dx +
-                dy * dy;
+            const start =
+                Math.max(
+                    0,
+                    center -
+                    windowSize
+                );
 
-            const score =
-                distance +
-                spatial *
-                proximity *
-                80;
+            const end =
+                Math.min(
+                    total - 1,
+                    center +
+                    windowSize
+                );
 
-            if (
-                score <
-                bestScore
+            for (
+                let j = start;
+                j <= end;
+                j++
             ) {
 
-                bestScore =
-                    score;
+                const q =
+                    target[j];
 
-                best =
-                    q;
+                const color =
+                    colorDistance(
+                        p.r,
+                        p.g,
+                        p.b,
+                        q.r,
+                        q.g,
+                        q.b
+                    );
+
+                const dx =
+                    p.x -
+                    q.x;
+
+                const dy =
+                    p.y -
+                    q.y;
+
+                const spatial =
+                    dx * dx +
+                    dy * dy;
+
+                const score =
+                    color +
+                    spatial *
+                    proximity *
+                    100;
+
+                if (
+                    score <
+                    bestScore
+                ) {
+
+                    bestScore =
+                        score;
+
+                    best =
+                        q;
+                }
             }
-        }
 
-        assignments[i] =
-            best;
+            assignments[
+                p.index
+            ] =
+                best;
+        }
     }
 
+
     /*
-     * Resolve duplicate destinations.
+     * Resolve duplicate destinations cheaply.
      */
 
     const used =
-        new Set();
+        new Uint8Array(total);
 
     const result =
-        [];
+        new Array(total);
+
 
     for (
         let i = 0;
-        i < source.length;
+        i < total;
         i++
     ) {
 
@@ -1607,82 +2165,76 @@ function buildPixels() {
             source[i];
 
         let destination =
-            assignments[i];
-
-        let key =
-            destination.x +
-            ":" +
-            destination.y;
+            assignments[
+                p.index
+            ];
 
         if (
-            used.has(key)
+            used[
+                destination.index
+            ]
         ) {
+
+            /*
+             * Search outward from the current
+             * brightness position.
+             */
 
             let replacement =
                 null;
 
-            let replacementScore =
-                Infinity;
+            const center =
+                destination.index;
 
             for (
-                const q of target
+                let radius = 1;
+                radius < total;
+                radius++
             ) {
 
-                const qKey =
-                    q.x +
-                    ":" +
-                    q.y;
+                const left =
+                    center - radius;
+
+                const right =
+                    center + radius;
 
                 if (
-                    used.has(qKey)
-                )
-                    continue;
-
-                const dx =
-                    p.x - q.x;
-
-                const dy =
-                    p.y - q.y;
-
-                const spatial =
-                    dx * dx +
-                    dy * dy;
-
-                const score =
-                    colorDistance(
-                        p,
-                        q
-                    ) +
-                    spatial *
-                    proximity *
-                    80;
-
-                if (
-                    score <
-                    replacementScore
+                    left >= 0 &&
+                    !used[
+                        target[left].index
+                    ]
                 ) {
 
-                    replacementScore =
-                        score;
+                    replacement =
+                        target[left];
+
+                    break;
+                }
+
+                if (
+                    right < total &&
+                    !used[
+                        target[right].index
+                    ]
+                ) {
 
                     replacement =
-                        q;
+                        target[right];
+
+                    break;
                 }
             }
 
             if (replacement)
                 destination =
                     replacement;
-
-            key =
-                destination.x +
-                ":" +
-                destination.y;
         }
 
-        used.add(key);
+        used[
+            destination.index
+        ] = 1;
 
-        result.push({
+        result[i] = {
 
             ox:
                 p.x,
@@ -1697,7 +2249,9 @@ function buildPixels() {
                 destination.y,
 
             /*
-             * The source color is stored permanently.
+             * SOURCE COLOR ONLY.
+             *
+             * Target colors never get drawn.
              */
 
             r:
@@ -1708,144 +2262,17 @@ function buildPixels() {
 
             b:
                 p.b
-        });
+        };
     }
 
     particles =
         result;
 
-    /*
-     * Drawing may have changed the source image since the
-     * previous build, so immediately refresh the particle
-     * colors from the current source.
-     */
-    refreshParticleColors();
-}
-
-/* ============================================================
-   REFRESH PARTICLE COLORS
-   ============================================================ */
-
-function refreshParticleColors() {
-
-    if (
-        !particles.length ||
-        !sourceCanvas
-    )
-        return;
-
-    const resolution =
-        Math.max(
-            8,
-            Math.min(
-                160,
-                Number(
-                    resolutionInput.value
-                ) || 64
-            )
-        );
-
-    const sourceData =
-        sourceCanvas
-            .getContext("2d", {
-                willReadFrequently: true
-            })
-            .getImageData(
-                0,
-                0,
-                512,
-                512
-            ).data;
-
-    const step =
-        512 / resolution;
-
-    /*
-     * Add the drawing layer on top of the source
-     * before sampling it.
-     */
-
-    const combined =
-        document.createElement("canvas");
-
-    combined.width =
-        512;
-
-    combined.height =
-        512;
-
-    const combinedCtx =
-        combined.getContext("2d");
-
-    combinedCtx.drawImage(
-        sourceCanvas,
-        0,
+    setProgress(
         0
     );
-
-    combinedCtx.drawImage(
-        drawingCanvas,
-        0,
-        0
-    );
-
-    const data =
-        combinedCtx
-            .getImageData(
-                0,
-                0,
-                512,
-                512
-            ).data;
-
-    for (
-        const particle of particles
-    ) {
-
-        const px =
-            Math.min(
-                511,
-                Math.max(
-                    0,
-                    Math.floor(
-                        (particle.ox - .5) *
-                        step +
-                        step / 2
-                    )
-                )
-            );
-
-        const py =
-            Math.min(
-                511,
-                Math.max(
-                    0,
-                    Math.floor(
-                        (particle.oy - .5) *
-                        step +
-                        step / 2
-                    )
-                )
-            );
-
-        const index =
-            (
-                py * 512 +
-                px
-            ) * 4;
-
-        particle.r =
-            data[index];
-
-        particle.g =
-            data[index + 1];
-
-        particle.b =
-            data[index + 2];
-    }
-
-    void sourceData;
 }
+
 
 /* ============================================================
    EASING
@@ -1861,6 +2288,27 @@ function ease(t) {
               3
           ) / 2;
 }
+
+
+/* ============================================================
+   PROGRESS
+   ============================================================ */
+
+function setProgress(value) {
+
+    const percentage =
+        Math.max(
+            0,
+            Math.min(
+                100,
+                value * 100
+            )
+        );
+
+    progressBar.style.width =
+        percentage + "%";
+}
+
 
 /* ============================================================
    DRAW
@@ -1901,10 +2349,6 @@ function draw(
     const top =
         (height - size) / 2;
 
-    /*
-     * No generated particle map yet.
-     * Show the source image plus live drawing.
-     */
 
     if (!particles.length) {
 
@@ -1919,21 +2363,9 @@ function draw(
             size
         );
 
-        if (
-            drawingCanvas
-        ) {
-
-            ctx.drawImage(
-                drawingCanvas,
-                left,
-                top,
-                size,
-                size
-            );
-        }
-
         return;
     }
+
 
     const resolution =
         Math.max(
@@ -1947,28 +2379,37 @@ function draw(
         );
 
     const cell =
-        size / resolution;
+        size /
+        resolution;
 
-    const e =
-        ease(
-            Math.max(
-                0,
-                Math.min(
-                    1,
-                    animationProgress
-                )
+    const p =
+        Math.max(
+            0,
+            Math.min(
+                1,
+                animationProgress
             )
         );
 
+    const e =
+        ease(p);
+
+
     /*
-     * Every particle keeps its source color.
+     * Draw source pixels.
      *
-     * Only X/Y change during animation.
+     * RGB is completely fixed.
+     * ONLY X/Y changes.
      */
 
     for (
-        const particle of particles
+        let i = 0;
+        i < particles.length;
+        i++
     ) {
+
+        const particle =
+            particles[i];
 
         const x =
             particle.ox +
@@ -1985,11 +2426,7 @@ function draw(
             ) * e;
 
         ctx.fillStyle =
-            `rgb(
-                ${particle.r},
-                ${particle.g},
-                ${particle.b}
-            )`;
+            `rgb(${particle.r},${particle.g},${particle.b})`;
 
         ctx.fillRect(
             left +
@@ -1998,50 +2435,12 @@ function draw(
             top +
             y * cell,
 
-            cell + 1,
-            cell + 1
+            cell + .75,
+            cell + .75
         );
-    }
-
-    /*
-     * In draw mode, show the brush cursor.
-     */
-
-    if (
-        drawMode &&
-        lastDrawX !== null &&
-        lastDrawY !== null
-    ) {
-
-        const brush =
-            Number(
-                brushSize.value
-            );
-
-        ctx.beginPath();
-
-        ctx.arc(
-            left +
-            lastDrawX / 512 * size,
-
-            top +
-            lastDrawY / 512 * size,
-
-            brush * size / 512,
-
-            0,
-            Math.PI * 2
-        );
-
-        ctx.strokeStyle =
-            "rgba(255,255,255,.7)";
-
-        ctx.lineWidth =
-            1;
-
-        ctx.stroke();
     }
 }
+
 
 /* ============================================================
    ANIMATION
@@ -2064,7 +2463,13 @@ function animationLoop(time) {
             ) / duration
         );
 
-    draw(progress);
+    draw(
+        progress
+    );
+
+    setProgress(
+        progress
+    );
 
     if (
         progress >= 1
@@ -2073,13 +2478,17 @@ function animationLoop(time) {
         playing =
             false;
 
+        animationFrame =
+            null;
+
         document
             .getElementById("play")
             .textContent =
                 "▶";
 
-        animationFrame =
-            null;
+        setProgress(
+            1
+        );
 
         return;
     }
@@ -2090,7 +2499,14 @@ function animationLoop(time) {
         );
 }
 
+
 function startAnimation() {
+
+    if (
+        !sourceCanvas ||
+        !targetCanvas
+    )
+        return;
 
     if (!particles.length)
         buildPixels();
@@ -2102,6 +2518,10 @@ function startAnimation() {
 
     progress =
         0;
+
+    setProgress(
+        0
+    );
 
     playing =
         true;
@@ -2120,6 +2540,7 @@ function startAnimation() {
         );
 }
 
+
 function reset() {
 
     playing =
@@ -2136,474 +2557,21 @@ function reset() {
     progress =
         0;
 
+    setProgress(
+        0
+    );
+
     document
         .getElementById("play")
         .textContent =
             "▶";
 
-    draw();
-}
-
-/* ============================================================
-   DRAWING MODE
-   ============================================================ */
-
-function setDrawMode(enabled) {
-
-    drawMode =
-        enabled;
-
-    drawControls
-        .classList
-        .toggle(
-            "open",
-            enabled
-        );
-
-    drawButton
-        .classList
-        .toggle(
-            "active",
-            enabled
-        );
-
-    drawButton.textContent =
-        enabled
-            ? "drawing"
-            : "draw";
-
-    canvas.style.cursor =
-        enabled
-            ? "crosshair"
-            : "default";
-
-    if (!enabled) {
-
-        drawing =
-            false;
-
-        lastDrawX =
-            null;
-
-        lastDrawY =
-            null;
-    }
+    particles =
+        [];
 
     draw();
 }
 
-drawButton.addEventListener(
-    "click",
-    () => {
-
-        setDrawMode(
-            !drawMode
-        );
-    }
-);
-
-/* ============================================================
-   DRAW COORDINATES
-   ============================================================ */
-
-function getImageCoordinates(event) {
-
-    const rect =
-        canvas.getBoundingClientRect();
-
-    const size =
-        Math.min(
-            innerWidth,
-            innerHeight
-        ) * .86;
-
-    const left =
-        (innerWidth - size) / 2;
-
-    const top =
-        (innerHeight - size) / 2;
-
-    const clientX =
-        event.clientX;
-
-    const clientY =
-        event.clientY;
-
-    const x =
-        (
-            clientX -
-            left
-        ) / size * 512;
-
-    const y =
-        (
-            clientY -
-            top
-        ) / size * 512;
-
-    if (
-        x < 0 ||
-        x > 512 ||
-        y < 0 ||
-        y > 512
-    )
-        return null;
-
-    return {
-        x,
-        y
-    };
-}
-
-/* ============================================================
-   ACTUAL DRAWING
-   ============================================================ */
-
-function drawAt(
-    x,
-    y
-) {
-
-    const size =
-        Math.max(
-            1,
-            Number(
-                brushSize.value
-            ) || 3
-        );
-
-    /*
-     * Small hard-edged brush.
-     *
-     * This writes actual RGB values into the drawing
-     * layer instead of changing the target image.
-     */
-
-    drawingCtx.fillStyle =
-        brushColor.value;
-
-    drawingCtx.beginPath();
-
-    drawingCtx.arc(
-        x,
-        y,
-        size,
-        0,
-        Math.PI * 2
-    );
-
-    drawingCtx.fill();
-
-    /*
-     * If particles already exist, update their colors
-     * immediately.
-     *
-     * This is what makes drawing realtime.
-     */
-
-    if (particles.length) {
-
-        refreshParticleColors();
-
-        /*
-         * Keep the currently generated destination
-         * mapping. Only the source particle colors change.
-         *
-         * Since draw() runs immediately, the changed
-         * pixels visibly move along the existing map.
-         */
-
-        draw(progress);
-    } else {
-
-        draw();
-    }
-}
-
-/* ============================================================
-   DRAW BETWEEN TWO POINTS
-   ============================================================ */
-
-function drawLine(
-    x1,
-    y1,
-    x2,
-    y2
-) {
-
-    const distance =
-        Math.hypot(
-            x2 - x1,
-            y2 - y1
-        );
-
-    /*
-     * Small spacing prevents gaps when pointer events
-     * arrive farther apart than the brush radius.
-     */
-
-    const spacing =
-        Math.max(
-            .75,
-            Number(
-                brushSize.value
-            ) * .45
-        );
-
-    const steps =
-        Math.max(
-            1,
-            Math.ceil(
-                distance / spacing
-            )
-        );
-
-    for (
-        let i = 1;
-        i <= steps;
-        i++
-    ) {
-
-        const t =
-            i / steps;
-
-        drawAt(
-            x1 +
-            (x2 - x1) * t,
-
-            y1 +
-            (y2 - y1) * t
-        );
-    }
-}
-
-/* ============================================================
-   POINTER EVENTS
-   ============================================================ */
-
-canvas.addEventListener(
-    "pointerdown",
-    event => {
-
-        if (!drawMode)
-            return;
-
-        const point =
-            getImageCoordinates(
-                event
-            );
-
-        if (!point)
-            return;
-
-        event.preventDefault();
-
-        drawing =
-            true;
-
-        lastDrawX =
-            point.x;
-
-        lastDrawY =
-            point.y;
-
-        try {
-
-            canvas.setPointerCapture(
-                event.pointerId
-            );
-
-        } catch {}
-
-        drawAt(
-            point.x,
-            point.y
-        );
-    }
-);
-
-canvas.addEventListener(
-    "pointermove",
-    event => {
-
-        if (!drawMode)
-            return;
-
-        const point =
-            getImageCoordinates(
-                event
-            );
-
-        if (!point)
-            return;
-
-        /*
-         * Always update cursor position even when not drawing.
-         */
-
-        lastDrawX =
-            point.x;
-
-        lastDrawY =
-            point.y;
-
-        if (!drawing) {
-
-            draw();
-            return;
-        }
-
-        event.preventDefault();
-
-        if (
-            lastDrawX !== null &&
-            lastDrawY !== null
-        ) {
-
-            /*
-             * These are the previous values before the
-             * current point gets stored.
-             */
-        }
-
-        /*
-         * Use a separate previous point so interpolation
-         * does not lose the starting coordinate.
-         */
-
-        const previousX =
-            canvas._lastDrawX;
-
-        const previousY =
-            canvas._lastDrawY;
-
-        if (
-            Number.isFinite(previousX) &&
-            Number.isFinite(previousY)
-        ) {
-
-            drawLine(
-                previousX,
-                previousY,
-                point.x,
-                point.y
-            );
-
-        } else {
-
-            drawAt(
-                point.x,
-                point.y
-            );
-        }
-
-        canvas._lastDrawX =
-            point.x;
-
-        canvas._lastDrawY =
-            point.y;
-    }
-);
-
-canvas.addEventListener(
-    "pointerup",
-    event => {
-
-        drawing =
-            false;
-
-        canvas._lastDrawX =
-            null;
-
-        canvas._lastDrawY =
-            null;
-
-        try {
-
-            canvas.releasePointerCapture(
-                event.pointerId
-            );
-
-        } catch {}
-    }
-);
-
-canvas.addEventListener(
-    "pointercancel",
-    event => {
-
-        drawing =
-            false;
-
-        canvas._lastDrawX =
-            null;
-
-        canvas._lastDrawY =
-            null;
-
-        try {
-
-            canvas.releasePointerCapture(
-                event.pointerId
-            );
-
-        } catch {}
-    }
-);
-
-canvas.addEventListener(
-    "pointerleave",
-    () => {
-
-        if (!drawing) {
-
-            lastDrawX =
-                null;
-
-            lastDrawY =
-                null;
-
-            draw();
-        }
-    }
-);
-
-/* ============================================================
-   BRUSH UI
-   ============================================================ */
-
-brushSize.addEventListener(
-    "input",
-    () => {
-
-        brushSizeValue.textContent =
-            brushSize.value;
-
-        draw();
-    }
-);
-
-/* ============================================================
-   CLEAR DRAWING
-   ============================================================ */
-
-clearDrawing.addEventListener(
-    "click",
-    () => {
-
-        drawingCtx.clearRect(
-            0,
-            0,
-            512,
-            512
-        );
-
-        if (particles.length)
-            refreshParticleColors();
-
-        draw();
-    }
-);
 
 /* ============================================================
    GENERATE
@@ -2613,48 +2581,60 @@ document
     .getElementById("generate")
     .addEventListener(
         "click",
-        async () => {
+        () => {
 
             const button =
-                document
-                    .getElementById(
-                        "generate"
-                    );
+                document.getElementById(
+                    "generate"
+                );
+
+            if (
+                !sourceCanvas ||
+                !targetCanvas
+            )
+                return;
 
             button.disabled =
                 true;
 
-            await new Promise(
-                resolve =>
-                    setTimeout(
-                        resolve,
-                        20
-                    )
+            /*
+             * Give the browser one frame to update
+             * the button before doing the calculation.
+             */
+
+            requestAnimationFrame(
+                () => {
+
+                    try {
+
+                        setProgress(
+                            0
+                        );
+
+                        buildPixels();
+
+                        startAnimation();
+
+                    } catch (error) {
+
+                        console.error(
+                            error
+                        );
+
+                        alert(
+                            "Failed to generate."
+                        );
+
+                    } finally {
+
+                        button.disabled =
+                            false;
+                    }
+                }
             );
-
-            try {
-
-                buildPixels();
-
-                startAnimation();
-
-            } catch (error) {
-
-                console.error(
-                    error
-                );
-
-                alert(
-                    "Failed to generate."
-                );
-
-            } finally {
-
-                button.disabled =
-                    false;
-            }
         }
     );
+
 
 /* ============================================================
    PLAY / PAUSE
@@ -2693,6 +2673,7 @@ document
         }
     );
 
+
 /* ============================================================
    RESET
    ============================================================ */
@@ -2703,6 +2684,7 @@ document
         "click",
         reset
     );
+
 
 /* ============================================================
    SOURCE / TARGET
@@ -2723,6 +2705,7 @@ document
         () =>
             targetFile.click()
     );
+
 
 sourceFile.addEventListener(
     "change",
@@ -2746,19 +2729,13 @@ sourceFile.addEventListener(
                     sourceImage
                 );
 
-            drawingCtx.clearRect(
-                0,
-                0,
-                512,
-                512
-            );
-
             updatePreview(
                 sourceCanvas,
                 sourcePreview
             );
 
-            particles = [];
+            particles =
+                [];
 
             reset();
 
@@ -2774,6 +2751,7 @@ sourceFile.addEventListener(
         }
     }
 );
+
 
 targetFile.addEventListener(
     "change",
@@ -2802,7 +2780,8 @@ targetFile.addEventListener(
                 targetPreview
             );
 
-            particles = [];
+            particles =
+                [];
 
             reset();
 
@@ -2818,6 +2797,120 @@ targetFile.addEventListener(
         }
     }
 );
+
+
+/* ============================================================
+   DRAW BUTTON
+   ============================================================ */
+
+document
+    .getElementById("drawButton")
+    .addEventListener(
+        "click",
+        () => {
+
+            const open =
+                drawCanvas.classList.toggle(
+                    "open"
+                );
+
+            drawTools.classList.toggle(
+                "open",
+                open
+            );
+
+            if (open) {
+
+                setupDrawingCanvas();
+
+                document
+                    .getElementById(
+                        "drawButton"
+                    )
+                    .textContent =
+                        "close draw";
+
+            } else {
+
+                document
+                    .getElementById(
+                        "drawButton"
+                    )
+                    .textContent =
+                        "draw";
+            }
+        }
+    );
+
+
+/* ============================================================
+   USE DRAWING
+   ============================================================ */
+
+document
+    .getElementById("useDrawing")
+    .addEventListener(
+        "click",
+        () => {
+
+            drawingSourceImageToDrawing();
+
+            drawCanvas
+                .classList
+                .remove("open");
+
+            drawTools
+                .classList
+                .remove("open");
+
+            document
+                .getElementById(
+                    "drawButton"
+                )
+                .textContent =
+                    "draw";
+
+            reset();
+        }
+    );
+
+
+/* ============================================================
+   CLEAR DRAWING
+   ============================================================ */
+
+document
+    .getElementById("clearDrawing")
+    .addEventListener(
+        "click",
+        () => {
+
+            setupDrawingCanvas();
+
+            particles =
+                [];
+
+            drawingDirty =
+                true;
+
+            queueRealtimeSourceUpdate();
+        }
+    );
+
+
+/* ============================================================
+   BRUSH CONTROLS
+   ============================================================ */
+
+brushSize.addEventListener(
+    "input",
+    () => {
+
+        brushValue.textContent =
+            brushSize.value;
+    }
+);
+
 
 /* ============================================================
    CROP
@@ -2838,6 +2931,7 @@ const cropCtx =
         "2d"
     );
 
+
 function openCrop(mode) {
 
     cropMode =
@@ -2851,35 +2945,34 @@ function openCrop(mode) {
     if (
         !cropImage &&
         mode === "source"
-    ) {
-
+    )
         cropImage =
             sourceCanvas;
-    }
 
     if (
         !cropImage &&
         mode === "target"
-    ) {
-
+    )
         cropImage =
             targetCanvas;
-    }
 
     if (!cropImage)
         return;
 
     document
         .getElementById("cropX")
-        .value = 50;
+        .value =
+        50;
 
     document
         .getElementById("cropY")
-        .value = 50;
+        .value =
+        50;
 
     document
         .getElementById("cropZoom")
-        .value = 1;
+        .value =
+        1;
 
     cropOverlay
         .classList
@@ -2887,6 +2980,7 @@ function openCrop(mode) {
 
     updateCropPreview();
 }
+
 
 function updateCropPreview() {
 
@@ -2942,6 +3036,7 @@ function updateCropPreview() {
     );
 }
 
+
 document
     .getElementById("sourceCrop")
     .addEventListener(
@@ -2949,6 +3044,7 @@ document
         () =>
             openCrop("source")
     );
+
 
 document
     .getElementById("targetCrop")
@@ -2958,9 +3054,9 @@ document
             openCrop("target")
     );
 
+
 for (
-    const id
-    of [
+    const id of [
         "cropX",
         "cropY",
         "cropZoom"
@@ -2975,6 +3071,7 @@ for (
         );
 }
 
+
 document
     .getElementById("cropCancel")
     .addEventListener(
@@ -2986,6 +3083,7 @@ document
                 .remove("open");
         }
     );
+
 
 document
     .getElementById("cropApply")
@@ -3039,14 +3137,12 @@ document
                 sourceCanvas =
                     cropped;
 
-                sourcePreview.src =
-                    cropped.toDataURL();
+                sourceImage =
+                    null;
 
-                drawingCtx.clearRect(
-                    0,
-                    0,
-                    512,
-                    512
+                updatePreview(
+                    sourceCanvas,
+                    sourcePreview
                 );
 
             } else {
@@ -3054,11 +3150,17 @@ document
                 targetCanvas =
                     cropped;
 
-                targetPreview.src =
-                    cropped.toDataURL();
+                targetImage =
+                    null;
+
+                updatePreview(
+                    targetCanvas,
+                    targetPreview
+                );
             }
 
-            particles = [];
+            particles =
+                [];
 
             cropOverlay
                 .classList
@@ -3067,6 +3169,7 @@ document
             reset();
         }
     );
+
 
 /* ============================================================
    ADVANCED
@@ -3087,6 +3190,7 @@ document
         }
     );
 
+
 proximityInput.addEventListener(
     "input",
     () => {
@@ -3097,6 +3201,7 @@ proximityInput.addEventListener(
             ).toFixed(2);
     }
 );
+
 
 resolutionInput.addEventListener(
     "change",
@@ -3116,21 +3221,25 @@ resolutionInput.addEventListener(
         resolutionInput.value =
             value;
 
-        particles = [];
+        particles =
+            [];
 
         reset();
     }
 );
+
 
 algorithmInput.addEventListener(
     "change",
     () => {
 
-        particles = [];
+        particles =
+            [];
 
         reset();
     }
 );
+
 
 /* ============================================================
    SAVE
@@ -3166,10 +3275,9 @@ document
                 "video/webm";
 
             if (
-                MediaRecorder
-                    .isTypeSupported(
-                        "video/webm;codecs=vp9"
-                    )
+                MediaRecorder.isTypeSupported(
+                    "video/webm;codecs=vp9"
+                )
             ) {
 
                 mime =
@@ -3180,7 +3288,8 @@ document
                 new MediaRecorder(
                     stream,
                     {
-                        mimeType: mime
+                        mimeType:
+                            mime
                     }
                 );
 
@@ -3207,7 +3316,8 @@ document
                         new Blob(
                             chunks,
                             {
-                                type: mime
+                                type:
+                                    mime
                             }
                         );
 
@@ -3227,9 +3337,9 @@ document
                     a.download =
                         "obamify.webm";
 
-                    document
-                        .body
-                        .appendChild(a);
+                    document.body.appendChild(
+                        a
+                    );
 
                     a.click();
 
@@ -3262,6 +3372,10 @@ document
 
                 draw(p);
 
+                setProgress(
+                    p
+                );
+
                 if (
                     p < 1
                 ) {
@@ -3285,6 +3399,7 @@ document
             );
         }
     );
+
 
 /* ============================================================
    INITIALIZATION
