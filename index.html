@@ -38,8 +38,8 @@ body {
     height: 100%;
     display: block;
     touch-action: none;
+    cursor: default;
 }
-
 
 /* ============================================================
    CONTROLS
@@ -76,7 +76,6 @@ body {
     display: flex;
     align-items: center;
     gap: 6px;
-
     min-height: 30px;
 }
 
@@ -94,7 +93,6 @@ button,
 select {
     color: #eee;
     background: #555;
-
     border: 1px solid #707070;
     border-radius: 3px;
 }
@@ -102,7 +100,6 @@ select {
 button {
     min-height: 27px;
     padding: 3px 9px;
-
     cursor: pointer;
 }
 
@@ -121,6 +118,7 @@ button:disabled {
 
 button.active {
     background: #777;
+    border-color: #aaa;
 }
 
 select {
@@ -158,12 +156,9 @@ input[type="range"] {
 .value {
     width: 38px;
     text-align: right;
-
     color: #aaa;
-
     font-variant-numeric: tabular-nums;
 }
-
 
 /* ============================================================
    IMAGE BUTTONS
@@ -178,13 +173,10 @@ input[type="range"] {
 .image-button img {
     width: 27px;
     height: 27px;
-
     object-fit: cover;
-
     border-radius: 2px;
     background: #222;
 }
-
 
 /* ============================================================
    ADVANCED
@@ -192,10 +184,8 @@ input[type="range"] {
 
 #advanced {
     display: none;
-
     margin-top: 5px;
     padding-top: 5px;
-
     border-top: 1px solid rgba(255,255,255,.08);
 }
 
@@ -207,15 +197,12 @@ input[type="range"] {
     justify-content: flex-start;
 }
 
-
 /* ============================================================
-   DRAWING
+   DRAW CONTROLS
    ============================================================ */
 
 #drawControls {
     display: none;
-    align-items: center;
-    gap: 6px;
 }
 
 #drawControls.open {
@@ -223,29 +210,22 @@ input[type="range"] {
 }
 
 #brushSize {
-    width: 90px !important;
+    width: 90px;
 }
 
-#drawCursor {
-    position: fixed;
-    z-index: 150;
-
-    width: 8px;
-    height: 8px;
-
-    pointer-events: none;
-
-    border: 1px solid white;
-    border-radius: 50%;
-
-    transform: translate(-50%, -50%);
-
-    display: none;
-
-    box-shadow:
-        0 0 0 1px black;
+#brushColor {
+    width: 30px;
+    height: 27px;
+    padding: 1px;
+    border: 1px solid #707070;
+    background: #444;
+    cursor: pointer;
 }
 
+#drawStatus {
+    color: #aaa;
+    white-space: nowrap;
+}
 
 /* ============================================================
    CROP
@@ -285,7 +265,6 @@ input[type="range"] {
 
 #cropTitle {
     margin-bottom: 10px;
-
     font-weight: 600;
 }
 
@@ -298,7 +277,6 @@ input[type="range"] {
     justify-content: center;
 
     background: #222;
-
     overflow: hidden;
 }
 
@@ -310,9 +288,7 @@ input[type="range"] {
 .crop-row {
     display: flex;
     align-items: center;
-
     gap: 8px;
-
     margin-top: 9px;
 }
 
@@ -327,12 +303,9 @@ input[type="range"] {
 .crop-actions {
     display: flex;
     justify-content: flex-end;
-
     gap: 6px;
-
     margin-top: 10px;
 }
-
 
 /* ============================================================
    LINKS
@@ -347,7 +320,6 @@ input[type="range"] {
 
     display: flex;
     flex-direction: column;
-
     gap: 10px;
 }
 
@@ -376,10 +348,8 @@ input[type="range"] {
 .link svg {
     width: 29px;
     height: 29px;
-
     fill: white;
 }
-
 
 /* ============================================================
    MOBILE
@@ -389,9 +359,7 @@ input[type="range"] {
 
     #controls {
         top: 4px;
-
         width: calc(100vw - 8px);
-
         font-size: 12px;
     }
 
@@ -407,6 +375,10 @@ input[type="range"] {
         left: 12px;
         bottom: 12px;
     }
+
+    #drawStatus {
+        display: none;
+    }
 }
 </style>
 </head>
@@ -414,7 +386,6 @@ input[type="range"] {
 <body>
 
 <canvas id="canvas"></canvas>
-
 
 <!-- ============================================================
      CONTROLS
@@ -448,11 +419,11 @@ input[type="range"] {
             crop
         </button>
 
-        <button id="drawMode">
+        <div class="spacer"></div>
+
+        <button id="drawButton">
             draw
         </button>
-
-        <div class="spacer"></div>
 
         <button id="play">
             ▶
@@ -464,7 +435,6 @@ input[type="range"] {
 
     </div>
 
-
     <div class="row">
 
         <button id="generate">
@@ -475,30 +445,6 @@ input[type="range"] {
             advanced
         </button>
 
-        <div id="drawControls">
-
-            <span class="label">
-                brush
-            </span>
-
-            <input
-                id="brushSize"
-                type="range"
-                min="1"
-                max="20"
-                step="1"
-                value="4"
-            >
-
-            <span
-                id="brushSizeValue"
-                class="value"
-            >
-                4
-            </span>
-
-        </div>
-
         <div class="spacer"></div>
 
         <button id="save">
@@ -507,6 +453,46 @@ input[type="range"] {
 
     </div>
 
+    <div
+        id="drawControls"
+        class="row"
+    >
+
+        <span class="label">
+            brush
+        </span>
+
+        <input
+            id="brushSize"
+            type="range"
+            min="1"
+            max="12"
+            step="1"
+            value="3"
+        >
+
+        <span
+            id="brushSizeValue"
+            class="value"
+        >
+            3
+        </span>
+
+        <input
+            id="brushColor"
+            type="color"
+            value="#ffffff"
+        >
+
+        <button id="clearDrawing">
+            clear
+        </button>
+
+        <span id="drawStatus">
+            draw on the image
+        </span>
+
+    </div>
 
     <div id="advanced">
 
@@ -526,7 +512,6 @@ input[type="range"] {
             >
 
         </div>
-
 
         <div class="row">
 
@@ -552,7 +537,6 @@ input[type="range"] {
 
         </div>
 
-
         <div class="row">
 
             <span class="label">
@@ -577,7 +561,6 @@ input[type="range"] {
 
 </div>
 
-
 <!-- ============================================================
      CROP WINDOW
      ============================================================ -->
@@ -590,7 +573,6 @@ input[type="range"] {
             crop image
         </div>
 
-
         <div id="cropPreview">
 
             <canvas
@@ -600,7 +582,6 @@ input[type="range"] {
             ></canvas>
 
         </div>
-
 
         <div class="crop-row">
 
@@ -618,7 +599,6 @@ input[type="range"] {
 
         </div>
 
-
         <div class="crop-row">
 
             <span>
@@ -634,7 +614,6 @@ input[type="range"] {
             >
 
         </div>
-
 
         <div class="crop-row">
 
@@ -653,7 +632,6 @@ input[type="range"] {
 
         </div>
 
-
         <div class="crop-actions">
 
             <button id="cropCancel">
@@ -669,7 +647,6 @@ input[type="range"] {
     </div>
 
 </div>
-
 
 <!-- ============================================================
      LINKS
@@ -719,7 +696,6 @@ input[type="range"] {
 
     </a>
 
-
     <a
         class="link"
         href="https://spu7nix.net"
@@ -742,7 +718,6 @@ input[type="range"] {
 
 </div>
 
-
 <input
     id="sourceFile"
     type="file"
@@ -757,10 +732,8 @@ input[type="range"] {
     hidden
 >
 
-
 <script>
 "use strict";
-
 
 /* ============================================================
    ELEMENTS
@@ -770,8 +743,9 @@ const canvas =
     document.getElementById("canvas");
 
 const ctx =
-    canvas.getContext("2d");
-
+    canvas.getContext("2d", {
+        alpha: false
+    });
 
 const sourceFile =
     document.getElementById("sourceFile");
@@ -779,13 +753,11 @@ const sourceFile =
 const targetFile =
     document.getElementById("targetFile");
 
-
 const sourcePreview =
     document.getElementById("sourcePreview");
 
 const targetPreview =
     document.getElementById("targetPreview");
-
 
 const resolutionInput =
     document.getElementById("resolution");
@@ -799,19 +771,23 @@ const proximityValue =
 const algorithmInput =
     document.getElementById("algorithm");
 
-
-const drawModeButton =
-    document.getElementById("drawMode");
+const drawButton =
+    document.getElementById("drawButton");
 
 const drawControls =
     document.getElementById("drawControls");
 
-const brushSizeInput =
+const brushSize =
     document.getElementById("brushSize");
 
 const brushSizeValue =
     document.getElementById("brushSizeValue");
 
+const brushColor =
+    document.getElementById("brushColor");
+
+const clearDrawing =
+    document.getElementById("clearDrawing");
 
 /* ============================================================
    STATE
@@ -834,31 +810,37 @@ let animationStart = 0;
 let animationFrame = null;
 
 let cropMode = null;
-
 let cropImage = null;
 
-
-/* ============================================================
-   REALTIME DRAWING STATE
-   ============================================================ */
-
-let drawingMode = false;
-
-let drawingPointerDown = false;
+let drawMode = false;
+let drawing = false;
 
 let lastDrawX = null;
 let lastDrawY = null;
 
-const drawCursor =
-    document.createElement("div");
+/*
+ * Separate 512x512 canvas containing the user's drawing.
+ *
+ * This is deliberately kept separate from the original
+ * source canvas so the source image itself is not destroyed.
+ */
+const drawingCanvas =
+    document.createElement("canvas");
 
-drawCursor.id =
-    "drawCursor";
+drawingCanvas.width = 512;
+drawingCanvas.height = 512;
 
-document.body.appendChild(
-    drawCursor
+const drawingCtx =
+    drawingCanvas.getContext("2d", {
+        willReadFrequently: true
+    });
+
+drawingCtx.clearRect(
+    0,
+    0,
+    512,
+    512
 );
-
 
 /* ============================================================
    DEFAULT SOURCE
@@ -906,7 +888,6 @@ function createDefaultSource() {
     return c;
 }
 
-
 /* ============================================================
    FALLBACK TARGET
    ============================================================ */
@@ -932,7 +913,6 @@ function createFallbackObama() {
         512
     );
 
-
     x.fillStyle =
         "#c9946b";
 
@@ -950,7 +930,6 @@ function createFallbackObama() {
 
     x.fill();
 
-
     x.fillStyle =
         "#17120f";
 
@@ -967,7 +946,6 @@ function createFallbackObama() {
     );
 
     x.fill();
-
 
     x.fillStyle =
         "#111";
@@ -996,7 +974,6 @@ function createFallbackObama() {
 
     x.fill();
 
-
     x.strokeStyle =
         "#633c2c";
 
@@ -1015,7 +992,6 @@ function createFallbackObama() {
 
     x.stroke();
 
-
     x.fillStyle =
         "#111";
 
@@ -1030,10 +1006,8 @@ function createFallbackObama() {
 
     x.fill();
 
-
     return c;
 }
-
 
 /* ============================================================
    IMAGE LOADING
@@ -1041,84 +1015,79 @@ function createFallbackObama() {
 
 function loadFile(file) {
 
-    return new Promise(
-        (resolve, reject) => {
+    return new Promise((resolve, reject) => {
 
-            if (
-                !file ||
-                !file.type.startsWith("image/")
-            ) {
+        if (
+            !file ||
+            !file.type.startsWith("image/")
+        ) {
 
-                reject(
-                    new Error(
-                        "Invalid image"
-                    )
-                );
+            reject(
+                new Error(
+                    "Invalid image"
+                )
+            );
 
-                return;
-            }
-
-            const url =
-                URL.createObjectURL(file);
-
-            const img =
-                new Image();
-
-            img.onload = () => {
-
-                URL.revokeObjectURL(
-                    url
-                );
-
-                resolve(img);
-            };
-
-            img.onerror = () => {
-
-                URL.revokeObjectURL(
-                    url
-                );
-
-                reject(
-                    new Error(
-                        "Could not load image"
-                    )
-                );
-            };
-
-            img.src = url;
+            return;
         }
-    );
-}
 
+        const url =
+            URL.createObjectURL(file);
+
+        const img =
+            new Image();
+
+        img.onload = () => {
+
+            URL.revokeObjectURL(
+                url
+            );
+
+            resolve(img);
+        };
+
+        img.onerror = () => {
+
+            URL.revokeObjectURL(
+                url
+            );
+
+            reject(
+                new Error(
+                    "Could not load image"
+                )
+            );
+        };
+
+        img.src =
+            url;
+    });
+}
 
 function loadURL(url) {
 
-    return new Promise(
-        (resolve, reject) => {
+    return new Promise((resolve, reject) => {
 
-            const img =
-                new Image();
+        const img =
+            new Image();
 
-            img.crossOrigin =
-                "anonymous";
+        img.crossOrigin =
+            "anonymous";
 
-            img.onload = () =>
-                resolve(img);
+        img.onload = () =>
+            resolve(img);
 
-            img.onerror = () =>
-                reject(
-                    new Error(
-                        "Could not load image"
-                    )
-                );
+        img.onerror = () =>
+            reject(
+                new Error(
+                    "Could not load image"
+                )
+            );
 
-            img.src =
-                url;
-        }
-    );
+        img.src =
+            url;
+    });
 }
-
 
 /* ============================================================
    SQUARE CROP
@@ -1160,16 +1129,11 @@ function makeSquare(
     const sy =
         maxY * offsetY;
 
-
     const c =
         document.createElement("canvas");
 
-    c.width =
-        512;
-
-    c.height =
-        512;
-
+    c.width = 512;
+    c.height = 512;
 
     const x =
         c.getContext("2d");
@@ -1177,27 +1141,20 @@ function makeSquare(
     x.imageSmoothingEnabled =
         true;
 
-
     x.drawImage(
         img,
-
         sx,
         sy,
-
         visible,
         visible,
-
         0,
         0,
-
         512,
         512
     );
 
-
     return c;
 }
-
 
 /* ============================================================
    PREVIEW
@@ -1214,7 +1171,6 @@ function updatePreview(
             .85
         );
 }
-
 
 /* ============================================================
    RESIZE
@@ -1244,7 +1200,6 @@ function resizeCanvas() {
     canvas.style.height =
         innerHeight + "px";
 
-
     ctx.setTransform(
         dpr,
         0,
@@ -1265,7 +1220,6 @@ window.addEventListener(
     }
 );
 
-
 /* ============================================================
    COLOR DISTANCE
    ============================================================ */
@@ -1281,7 +1235,6 @@ function colorDistance(a, b) {
     const db =
         a.b - b.b;
 
-
     return (
         dr * dr +
         dg * dg +
@@ -1289,18 +1242,22 @@ function colorDistance(a, b) {
     );
 }
 
-
 /* ============================================================
    BUILD PIXELS
    ============================================================ */
 
 function buildPixels() {
 
+    if (
+        !sourceCanvas ||
+        !targetCanvas
+    )
+        return;
+
     const requested =
         Number(
             resolutionInput.value
         );
-
 
     const resolution =
         Math.max(
@@ -1313,40 +1270,46 @@ function buildPixels() {
             )
         );
 
-
     resolutionInput.value =
         resolution;
 
-
     const sourceData =
         sourceCanvas
-            .getContext("2d")
+            .getContext("2d", {
+                willReadFrequently: true
+            })
             .getImageData(
                 0,
                 0,
                 512,
                 512
             ).data;
-
 
     const targetData =
         targetCanvas
-            .getContext("2d")
+            .getContext("2d", {
+                willReadFrequently: true
+            })
             .getImageData(
                 0,
                 0,
                 512,
                 512
             ).data;
-
 
     const step =
         512 / resolution;
 
+    const source =
+        [];
 
-    const source = [];
-    const target = [];
+    const target =
+        [];
 
+    /*
+     * Sample both images at exactly the same
+     * grid positions.
+     */
 
     for (
         let y = 0;
@@ -1376,13 +1339,11 @@ function buildPixels() {
                     )
                 );
 
-
             const index =
                 (
                     py * 512 +
                     px
                 ) * 4;
-
 
             source.push({
 
@@ -1398,7 +1359,6 @@ function buildPixels() {
                 b:
                     sourceData[index + 2]
             });
-
 
             target.push({
 
@@ -1417,12 +1377,15 @@ function buildPixels() {
         }
     }
 
-
     const proximity =
         Number(
             proximityInput.value
         );
 
+    /*
+     * Instead of copying target colors into particles,
+     * target pixels ONLY determine destinations.
+     */
 
     const sortedSource =
         source
@@ -1445,7 +1408,6 @@ function buildPixels() {
                     b.brightness
             );
 
-
     const sortedTarget =
         target
             .map(
@@ -1467,12 +1429,10 @@ function buildPixels() {
                     b.brightness
             );
 
-
     const assignments =
         new Array(
             source.length
         );
-
 
     for (
         let i = 0;
@@ -1480,27 +1440,35 @@ function buildPixels() {
         i++
     ) {
 
+        const sourceEntry =
+            sortedSource[i];
+
+        const targetEntry =
+            sortedTarget[i];
+
         assignments[
-            sortedSource[i].index
+            sourceEntry.index
         ] =
-            sortedTarget[i].pixel;
+            targetEntry.pixel;
     }
 
+    /*
+     * A full optimal search at high resolutions is
+     * extremely expensive. The fast/optimal modes therefore
+     * use bounded candidate searches.
+     */
 
     const candidatesPerPixel =
         algorithmInput.value === "fast"
-            ? 12
+            ? 16
             : Math.min(
-                80,
+                100,
                 target.length
             );
 
-
     /*
-     * Pre-sort target pixels by brightness once.
-     *
-     * The old implementation rebuilt this
-     * candidate list for every source pixel.
+     * Cache brightness ordering rather than sorting the
+     * entire target array for every source pixel.
      */
 
     for (
@@ -1512,13 +1480,11 @@ function buildPixels() {
         const p =
             source[i];
 
-
         let best =
             assignments[i];
 
         let bestScore =
             Infinity;
-
 
         const targetBrightness =
             (
@@ -1527,47 +1493,60 @@ function buildPixels() {
                 p.b
             ) / 3;
 
-
         /*
-         * Find the closest brightness candidates.
+         * Find the closest brightness range using binary
+         * search, then inspect candidates around it.
          */
 
-        const nearby =
-            target
-                .map(
-                    q => ({
-                        q,
+        let lo = 0;
+        let hi = sortedTarget.length;
 
-                        difference:
-                            Math.abs(
-                                (
-                                    q.r +
-                                    q.g +
-                                    q.b
-                                ) / 3 -
-                                targetBrightness
-                            )
-                    })
-                )
-                .sort(
-                    (a, b) =>
-                        a.difference -
-                        b.difference
-                )
-                .slice(
-                    0,
-                    candidatesPerPixel
-                );
+        while (lo < hi) {
 
+            const mid =
+                (lo + hi) >> 1;
+
+            if (
+                sortedTarget[mid].brightness <
+                targetBrightness
+            ) {
+
+                lo =
+                    mid + 1;
+
+            } else {
+
+                hi =
+                    mid;
+            }
+        }
+
+        const half =
+            Math.floor(
+                candidatesPerPixel / 2
+            );
+
+        const start =
+            Math.max(
+                0,
+                lo - half
+            );
+
+        const end =
+            Math.min(
+                sortedTarget.length,
+                start +
+                candidatesPerPixel
+            );
 
         for (
-            const entry
-            of nearby
+            let j = start;
+            j < end;
+            j++
         ) {
 
             const q =
-                entry.q;
-
+                sortedTarget[j].pixel;
 
             const distance =
                 colorDistance(
@@ -1575,25 +1554,21 @@ function buildPixels() {
                     q
                 );
 
-
             const dx =
                 p.x - q.x;
 
             const dy =
                 p.y - q.y;
 
-
             const spatial =
                 dx * dx +
                 dy * dy;
-
 
             const score =
                 distance +
                 spatial *
                 proximity *
                 80;
-
 
             if (
                 score <
@@ -1608,11 +1583,9 @@ function buildPixels() {
             }
         }
 
-
         assignments[i] =
             best;
     }
-
 
     /*
      * Resolve duplicate destinations.
@@ -1621,8 +1594,8 @@ function buildPixels() {
     const used =
         new Set();
 
-    const result = [];
-
+    const result =
+        [];
 
     for (
         let i = 0;
@@ -1633,16 +1606,13 @@ function buildPixels() {
         const p =
             source[i];
 
-
         let destination =
             assignments[i];
-
 
         let key =
             destination.x +
             ":" +
             destination.y;
-
 
         if (
             used.has(key)
@@ -1654,10 +1624,8 @@ function buildPixels() {
             let replacementScore =
                 Infinity;
 
-
             for (
-                const q
-                of target
+                const q of target
             ) {
 
                 const qKey =
@@ -1665,12 +1633,10 @@ function buildPixels() {
                     ":" +
                     q.y;
 
-
                 if (
                     used.has(qKey)
                 )
                     continue;
-
 
                 const dx =
                     p.x - q.x;
@@ -1678,11 +1644,9 @@ function buildPixels() {
                 const dy =
                     p.y - q.y;
 
-
                 const spatial =
                     dx * dx +
                     dy * dy;
-
 
                 const score =
                     colorDistance(
@@ -1692,7 +1656,6 @@ function buildPixels() {
                     spatial *
                     proximity *
                     80;
-
 
                 if (
                     score <
@@ -1707,21 +1670,17 @@ function buildPixels() {
                 }
             }
 
-
             if (replacement)
                 destination =
                     replacement;
+
+            key =
+                destination.x +
+                ":" +
+                destination.y;
         }
 
-
-        key =
-            destination.x +
-            ":" +
-            destination.y;
-
-
         used.add(key);
-
 
         result.push({
 
@@ -1738,10 +1697,7 @@ function buildPixels() {
                 destination.y,
 
             /*
-             * SOURCE COLOR IS STORED.
-             *
-             * TARGET COLOR IS NEVER USED
-             * FOR DRAWING.
+             * The source color is stored permanently.
              */
 
             r:
@@ -1755,11 +1711,141 @@ function buildPixels() {
         });
     }
 
-
     particles =
         result;
+
+    /*
+     * Drawing may have changed the source image since the
+     * previous build, so immediately refresh the particle
+     * colors from the current source.
+     */
+    refreshParticleColors();
 }
 
+/* ============================================================
+   REFRESH PARTICLE COLORS
+   ============================================================ */
+
+function refreshParticleColors() {
+
+    if (
+        !particles.length ||
+        !sourceCanvas
+    )
+        return;
+
+    const resolution =
+        Math.max(
+            8,
+            Math.min(
+                160,
+                Number(
+                    resolutionInput.value
+                ) || 64
+            )
+        );
+
+    const sourceData =
+        sourceCanvas
+            .getContext("2d", {
+                willReadFrequently: true
+            })
+            .getImageData(
+                0,
+                0,
+                512,
+                512
+            ).data;
+
+    const step =
+        512 / resolution;
+
+    /*
+     * Add the drawing layer on top of the source
+     * before sampling it.
+     */
+
+    const combined =
+        document.createElement("canvas");
+
+    combined.width =
+        512;
+
+    combined.height =
+        512;
+
+    const combinedCtx =
+        combined.getContext("2d");
+
+    combinedCtx.drawImage(
+        sourceCanvas,
+        0,
+        0
+    );
+
+    combinedCtx.drawImage(
+        drawingCanvas,
+        0,
+        0
+    );
+
+    const data =
+        combinedCtx
+            .getImageData(
+                0,
+                0,
+                512,
+                512
+            ).data;
+
+    for (
+        const particle of particles
+    ) {
+
+        const px =
+            Math.min(
+                511,
+                Math.max(
+                    0,
+                    Math.floor(
+                        (particle.ox - .5) *
+                        step +
+                        step / 2
+                    )
+                )
+            );
+
+        const py =
+            Math.min(
+                511,
+                Math.max(
+                    0,
+                    Math.floor(
+                        (particle.oy - .5) *
+                        step +
+                        step / 2
+                    )
+                )
+            );
+
+        const index =
+            (
+                py * 512 +
+                px
+            ) * 4;
+
+        particle.r =
+            data[index];
+
+        particle.g =
+            data[index + 1];
+
+        particle.b =
+            data[index + 2];
+    }
+
+    void sourceData;
+}
 
 /* ============================================================
    EASING
@@ -1776,7 +1862,6 @@ function ease(t) {
           ) / 2;
 }
 
-
 /* ============================================================
    DRAW
    ============================================================ */
@@ -1791,7 +1876,6 @@ function draw(
     const height =
         innerHeight;
 
-
     ctx.fillStyle =
         "#404040";
 
@@ -1802,10 +1886,8 @@ function draw(
         height
     );
 
-
     if (!sourceCanvas)
         return;
-
 
     const size =
         Math.min(
@@ -1813,13 +1895,16 @@ function draw(
             height
         ) * .86;
 
-
     const left =
         (width - size) / 2;
 
     const top =
         (height - size) / 2;
 
+    /*
+     * No generated particle map yet.
+     * Show the source image plus live drawing.
+     */
 
     if (!particles.length) {
 
@@ -1834,9 +1919,21 @@ function draw(
             size
         );
 
+        if (
+            drawingCanvas
+        ) {
+
+            ctx.drawImage(
+                drawingCanvas,
+                left,
+                top,
+                size,
+                size
+            );
+        }
+
         return;
     }
-
 
     const resolution =
         Math.max(
@@ -1849,10 +1946,8 @@ function draw(
             )
         );
 
-
     const cell =
         size / resolution;
-
 
     const e =
         ease(
@@ -1865,14 +1960,14 @@ function draw(
             )
         );
 
-
-    ctx.imageSmoothingEnabled =
-        false;
-
+    /*
+     * Every particle keeps its source color.
+     *
+     * Only X/Y change during animation.
+     */
 
     for (
-        const particle
-        of particles
+        const particle of particles
     ) {
 
         const x =
@@ -1882,7 +1977,6 @@ function draw(
                 particle.ox
             ) * e;
 
-
         const y =
             particle.oy +
             (
@@ -1890,19 +1984,12 @@ function draw(
                 particle.oy
             ) * e;
 
-
-        /*
-         * ONLY THE ORIGINAL SOURCE COLOR
-         * IS EVER DRAWN.
-         */
-
         ctx.fillStyle =
             `rgb(
                 ${particle.r},
                 ${particle.g},
                 ${particle.b}
             )`;
-
 
         ctx.fillRect(
             left +
@@ -1915,8 +2002,46 @@ function draw(
             cell + 1
         );
     }
-}
 
+    /*
+     * In draw mode, show the brush cursor.
+     */
+
+    if (
+        drawMode &&
+        lastDrawX !== null &&
+        lastDrawY !== null
+    ) {
+
+        const brush =
+            Number(
+                brushSize.value
+            );
+
+        ctx.beginPath();
+
+        ctx.arc(
+            left +
+            lastDrawX / 512 * size,
+
+            top +
+            lastDrawY / 512 * size,
+
+            brush * size / 512,
+
+            0,
+            Math.PI * 2
+        );
+
+        ctx.strokeStyle =
+            "rgba(255,255,255,.7)";
+
+        ctx.lineWidth =
+            1;
+
+        ctx.stroke();
+    }
+}
 
 /* ============================================================
    ANIMATION
@@ -1927,10 +2052,8 @@ function animationLoop(time) {
     if (!playing)
         return;
 
-
     const duration =
         5000;
-
 
     progress =
         Math.min(
@@ -1941,9 +2064,7 @@ function animationLoop(time) {
             ) / duration
         );
 
-
     draw(progress);
-
 
     if (
         progress >= 1
@@ -1963,25 +2084,21 @@ function animationLoop(time) {
         return;
     }
 
-
     animationFrame =
         requestAnimationFrame(
             animationLoop
         );
 }
 
-
 function startAnimation() {
 
     if (!particles.length)
         buildPixels();
 
-
     if (animationFrame)
         cancelAnimationFrame(
             animationFrame
         );
-
 
     progress =
         0;
@@ -1989,16 +2106,13 @@ function startAnimation() {
     playing =
         true;
 
-
     animationStart =
         performance.now();
-
 
     document
         .getElementById("play")
         .textContent =
             "Ⅱ";
-
 
     animationFrame =
         requestAnimationFrame(
@@ -2006,18 +2120,15 @@ function startAnimation() {
         );
 }
 
-
 function reset() {
 
     playing =
         false;
 
-
     if (animationFrame)
         cancelAnimationFrame(
             animationFrame
         );
-
 
     animationFrame =
         null;
@@ -2025,197 +2136,193 @@ function reset() {
     progress =
         0;
 
-
     document
         .getElementById("play")
         .textContent =
             "▶";
 
+    draw();
+}
+
+/* ============================================================
+   DRAWING MODE
+   ============================================================ */
+
+function setDrawMode(enabled) {
+
+    drawMode =
+        enabled;
+
+    drawControls
+        .classList
+        .toggle(
+            "open",
+            enabled
+        );
+
+    drawButton
+        .classList
+        .toggle(
+            "active",
+            enabled
+        );
+
+    drawButton.textContent =
+        enabled
+            ? "drawing"
+            : "draw";
+
+    canvas.style.cursor =
+        enabled
+            ? "crosshair"
+            : "default";
+
+    if (!enabled) {
+
+        drawing =
+            false;
+
+        lastDrawX =
+            null;
+
+        lastDrawY =
+            null;
+    }
 
     draw();
 }
 
+drawButton.addEventListener(
+    "click",
+    () => {
+
+        setDrawMode(
+            !drawMode
+        );
+    }
+);
 
 /* ============================================================
-   REALTIME DRAWING
+   DRAW COORDINATES
    ============================================================ */
 
-function screenToImage(
-    screenX,
-    screenY
-) {
+function getImageCoordinates(event) {
 
-    const width =
-        innerWidth;
-
-    const height =
-        innerHeight;
-
+    const rect =
+        canvas.getBoundingClientRect();
 
     const size =
         Math.min(
-            width,
-            height
+            innerWidth,
+            innerHeight
         ) * .86;
 
-
     const left =
-        (width - size) / 2;
+        (innerWidth - size) / 2;
 
     const top =
-        (height - size) / 2;
+        (innerHeight - size) / 2;
 
+    const clientX =
+        event.clientX;
+
+    const clientY =
+        event.clientY;
+
+    const x =
+        (
+            clientX -
+            left
+        ) / size * 512;
+
+    const y =
+        (
+            clientY -
+            top
+        ) / size * 512;
+
+    if (
+        x < 0 ||
+        x > 512 ||
+        y < 0 ||
+        y > 512
+    )
+        return null;
 
     return {
-
-        x:
-            (
-                screenX -
-                left
-            ) / size * 512,
-
-        y:
-            (
-                screenY -
-                top
-            ) / size * 512
+        x,
+        y
     };
 }
 
+/* ============================================================
+   ACTUAL DRAWING
+   ============================================================ */
 
-/*
- * Returns whether the pointer is actually
- * inside the displayed 512x512 image.
- */
-
-function isInsideImage(
+function drawAt(
     x,
     y
 ) {
 
-    const p =
-        screenToImage(
-            x,
-            y
-        );
-
-
-    return (
-        p.x >= 0 &&
-        p.x <= 512 &&
-        p.y >= 0 &&
-        p.y <= 512
-    );
-}
-
-
-/*
- * Draw a single point.
- *
- * The brush is intentionally small:
- *
- * 1 = one source pixel
- * 4 = four-pixel brush
- * etc.
- */
-
-function drawPoint(
-    screenX,
-    screenY
-) {
-
-    if (!sourceCanvas)
-        return;
-
-
-    const point =
-        screenToImage(
-            screenX,
-            screenY
-        );
-
-
-    if (
-        point.x < 0 ||
-        point.x >= 512 ||
-        point.y < 0 ||
-        point.y >= 512
-    )
-        return;
-
-
-    const brush =
+    const size =
         Math.max(
             1,
             Number(
-                brushSizeInput.value
-            ) || 4
+                brushSize.value
+            ) || 3
         );
-
-
-    const sourceCtx =
-        sourceCanvas.getContext(
-            "2d"
-        );
-
 
     /*
-     * Draw using the actual source canvas.
+     * Small hard-edged brush.
      *
-     * White is deliberately used as the brush
-     * color. This is a drawing editor for the
-     * source image, not an animation colorizer.
+     * This writes actual RGB values into the drawing
+     * layer instead of changing the target image.
      */
 
-    sourceCtx.fillStyle =
-        "#ffffff";
+    drawingCtx.fillStyle =
+        brushColor.value;
 
-    sourceCtx.fillRect(
-        Math.floor(
-            point.x -
-            brush / 2
-        ),
-        Math.floor(
-            point.y -
-            brush / 2
-        ),
-        brush,
-        brush
+    drawingCtx.beginPath();
+
+    drawingCtx.arc(
+        x,
+        y,
+        size,
+        0,
+        Math.PI * 2
     );
 
+    drawingCtx.fill();
 
     /*
-     * The generated particle map becomes
-     * invalid immediately after a source edit.
+     * If particles already exist, update their colors
+     * immediately.
+     *
+     * This is what makes drawing realtime.
      */
 
-    particles = [];
+    if (particles.length) {
 
-    progress = 0;
+        refreshParticleColors();
 
+        /*
+         * Keep the currently generated destination
+         * mapping. Only the source particle colors change.
+         *
+         * Since draw() runs immediately, the changed
+         * pixels visibly move along the existing map.
+         */
 
-    /*
-     * Show the edited source immediately.
-     */
+        draw(progress);
+    } else {
 
-    draw();
-
-
-    sourcePreview.src =
-        sourceCanvas.toDataURL(
-            "image/jpeg",
-            .85
-        );
+        draw();
+    }
 }
 
-
-/*
- * Draw a line with no gaps.
- *
- * Pointer events can jump several pixels between
- * frames, especially on mobile. Interpolating the
- * points makes drawing continuous.
- */
+/* ============================================================
+   DRAW BETWEEN TWO POINTS
+   ============================================================ */
 
 function drawLine(
     x1,
@@ -2224,76 +2331,35 @@ function drawLine(
     y2
 ) {
 
-    if (!sourceCanvas)
-        return;
-
-
-    const a =
-        screenToImage(
-            x1,
-            y1
-        );
-
-    const b =
-        screenToImage(
-            x2,
-            y2
-        );
-
-
-    const brush =
-        Math.max(
-            1,
-            Number(
-                brushSizeInput.value
-            ) || 4
-        );
-
-
-    const sourceCtx =
-        sourceCanvas.getContext(
-            "2d"
-        );
-
-
-    sourceCtx.fillStyle =
-        "#ffffff";
-
-
-    const dx =
-        b.x - a.x;
-
-    const dy =
-        b.y - a.y;
-
-
     const distance =
         Math.hypot(
-            dx,
-            dy
+            x2 - x1,
+            y2 - y1
         );
 
-
     /*
-     * One point approximately every half brush
-     * width prevents holes in fast strokes.
+     * Small spacing prevents gaps when pointer events
+     * arrive farther apart than the brush radius.
      */
+
+    const spacing =
+        Math.max(
+            .75,
+            Number(
+                brushSize.value
+            ) * .45
+        );
 
     const steps =
         Math.max(
             1,
             Math.ceil(
-                distance /
-                Math.max(
-                    .5,
-                    brush * .5
-                )
+                distance / spacing
             )
         );
 
-
     for (
-        let i = 0;
+        let i = 1;
         i <= steps;
         i++
     ) {
@@ -2301,265 +2367,45 @@ function drawLine(
         const t =
             i / steps;
 
+        drawAt(
+            x1 +
+            (x2 - x1) * t,
 
-        const x =
-            a.x +
-            dx * t;
-
-        const y =
-            a.y +
-            dy * t;
-
-
-        sourceCtx.fillRect(
-            Math.floor(
-                x -
-                brush / 2
-            ),
-            Math.floor(
-                y -
-                brush / 2
-            ),
-            brush,
-            brush
+            y1 +
+            (y2 - y1) * t
         );
     }
-
-
-    particles = [];
-
-    progress = 0;
-
-
-    /*
-     * THIS IS THE REALTIME PART:
-     *
-     * The canvas is redrawn during the pointermove
-     * event itself.
-     */
-
-    draw();
-
-
-    sourcePreview.src =
-        sourceCanvas.toDataURL(
-            "image/jpeg",
-            .85
-        );
 }
 
-
 /* ============================================================
-   DRAW CURSOR
-   ============================================================ */
-
-function updateDrawCursor(
-    x,
-    y
-) {
-
-    if (!drawingMode)
-        return;
-
-
-    const brush =
-        Math.max(
-            1,
-            Number(
-                brushSizeInput.value
-            ) || 4
-        );
-
-
-    /*
-     * Convert source-pixel brush size to
-     * screen pixels.
-     */
-
-    const size =
-        Math.min(
-            innerWidth,
-            innerHeight
-        ) * .86;
-
-
-    const screenBrush =
-        brush *
-        size /
-        512;
-
-
-    drawCursor.style.width =
-        Math.max(
-            2,
-            screenBrush
-        ) + "px";
-
-    drawCursor.style.height =
-        Math.max(
-            2,
-            screenBrush
-        ) + "px";
-
-
-    drawCursor.style.left =
-        x + "px";
-
-    drawCursor.style.top =
-        y + "px";
-
-    drawCursor.style.display =
-        "block";
-}
-
-
-/* ============================================================
-   DRAW MODE TOGGLE
-   ============================================================ */
-
-drawModeButton.addEventListener(
-    "click",
-    () => {
-
-        drawingMode =
-            !drawingMode;
-
-
-        drawModeButton.classList.toggle(
-            "active",
-            drawingMode
-        );
-
-
-        drawControls.classList.toggle(
-            "open",
-            drawingMode
-        );
-
-
-        if (!drawingMode) {
-
-            drawingPointerDown =
-                false;
-
-            lastDrawX =
-                null;
-
-            lastDrawY =
-                null;
-
-            drawCursor.style.display =
-                "none";
-
-            canvas.style.cursor =
-                "default";
-
-        } else {
-
-            canvas.style.cursor =
-                "none";
-        }
-    }
-);
-
-
-/* ============================================================
-   BRUSH SIZE
-   ============================================================ */
-
-brushSizeInput.addEventListener(
-    "input",
-    () => {
-
-        const value =
-            Math.max(
-                1,
-                Math.min(
-                    20,
-                    Number(
-                        brushSizeInput.value
-                    ) || 4
-                )
-            );
-
-
-        brushSizeInput.value =
-            value;
-
-
-        brushSizeValue.textContent =
-            value;
-
-
-        /*
-         * Update cursor size immediately.
-         */
-
-        if (
-            drawingMode &&
-            lastDrawX !== null &&
-            lastDrawY !== null
-        ) {
-
-            updateDrawCursor(
-                lastDrawX,
-                lastDrawY
-            );
-        }
-    }
-);
-
-
-/* ============================================================
-   POINTER DOWN
+   POINTER EVENTS
    ============================================================ */
 
 canvas.addEventListener(
     "pointerdown",
     event => {
 
-        if (!drawingMode)
+        if (!drawMode)
             return;
 
+        const point =
+            getImageCoordinates(
+                event
+            );
 
-        if (
-            !isInsideImage(
-                event.clientX,
-                event.clientY
-            )
-        )
+        if (!point)
             return;
-
 
         event.preventDefault();
 
-
-        drawingPointerDown =
+        drawing =
             true;
 
-
         lastDrawX =
-            event.clientX;
+            point.x;
 
         lastDrawY =
-            event.clientY;
-
-
-        updateDrawCursor(
-            event.clientX,
-            event.clientY
-        );
-
-
-        /*
-         * First point is drawn immediately.
-         */
-
-        drawPoint(
-            event.clientX,
-            event.clientY
-        );
-
+            point.y;
 
         try {
 
@@ -2568,44 +2414,46 @@ canvas.addEventListener(
             );
 
         } catch {}
-    },
-    {
-        passive: false
+
+        drawAt(
+            point.x,
+            point.y
+        );
     }
 );
-
-
-/* ============================================================
-   REALTIME POINTER MOVE
-   ============================================================ */
 
 canvas.addEventListener(
     "pointermove",
     event => {
 
-        if (!drawingMode)
+        if (!drawMode)
             return;
 
+        const point =
+            getImageCoordinates(
+                event
+            );
 
-        updateDrawCursor(
-            event.clientX,
-            event.clientY
-        );
-
-
-        if (!drawingPointerDown)
+        if (!point)
             return;
 
+        /*
+         * Always update cursor position even when not drawing.
+         */
+
+        lastDrawX =
+            point.x;
+
+        lastDrawY =
+            point.y;
+
+        if (!drawing) {
+
+            draw();
+            return;
+        }
 
         event.preventDefault();
-
-
-        const x =
-            event.clientX;
-
-        const y =
-            event.clientY;
-
 
         if (
             lastDrawX !== null &&
@@ -2613,102 +2461,149 @@ canvas.addEventListener(
         ) {
 
             /*
-             * DRAW RIGHT NOW.
-             *
-             * No pointerup.
-             * No timeout.
-             * No animation frame delay.
+             * These are the previous values before the
+             * current point gets stored.
              */
+        }
+
+        /*
+         * Use a separate previous point so interpolation
+         * does not lose the starting coordinate.
+         */
+
+        const previousX =
+            canvas._lastDrawX;
+
+        const previousY =
+            canvas._lastDrawY;
+
+        if (
+            Number.isFinite(previousX) &&
+            Number.isFinite(previousY)
+        ) {
 
             drawLine(
-                lastDrawX,
-                lastDrawY,
-                x,
-                y
+                previousX,
+                previousY,
+                point.x,
+                point.y
             );
 
         } else {
 
-            drawPoint(
-                x,
-                y
+            drawAt(
+                point.x,
+                point.y
             );
         }
 
+        canvas._lastDrawX =
+            point.x;
 
-        lastDrawX =
-            x;
-
-        lastDrawY =
-            y;
-    },
-    {
-        passive: false
+        canvas._lastDrawY =
+            point.y;
     }
 );
 
-
-/* ============================================================
-   POINTER UP
-   ============================================================ */
-
-function stopDrawing() {
-
-    drawingPointerDown =
-        false;
-
-    lastDrawX =
-        null;
-
-    lastDrawY =
-        null;
-}
-
-
 canvas.addEventListener(
     "pointerup",
-    stopDrawing
+    event => {
+
+        drawing =
+            false;
+
+        canvas._lastDrawX =
+            null;
+
+        canvas._lastDrawY =
+            null;
+
+        try {
+
+            canvas.releasePointerCapture(
+                event.pointerId
+            );
+
+        } catch {}
+    }
 );
 
 canvas.addEventListener(
     "pointercancel",
-    stopDrawing
+    event => {
+
+        drawing =
+            false;
+
+        canvas._lastDrawX =
+            null;
+
+        canvas._lastDrawY =
+            null;
+
+        try {
+
+            canvas.releasePointerCapture(
+                event.pointerId
+            );
+
+        } catch {}
+    }
 );
-
-canvas.addEventListener(
-    "lostpointercapture",
-    stopDrawing
-);
-
-
-/* ============================================================
-   DRAW CURSOR EVENTS
-   ============================================================ */
 
 canvas.addEventListener(
     "pointerleave",
     () => {
 
-        if (!drawingPointerDown)
-            drawCursor.style.display =
-                "none";
-    }
-);
+        if (!drawing) {
 
-canvas.addEventListener(
-    "pointerenter",
-    event => {
+            lastDrawX =
+                null;
 
-        if (drawingMode) {
+            lastDrawY =
+                null;
 
-            updateDrawCursor(
-                event.clientX,
-                event.clientY
-            );
+            draw();
         }
     }
 );
 
+/* ============================================================
+   BRUSH UI
+   ============================================================ */
+
+brushSize.addEventListener(
+    "input",
+    () => {
+
+        brushSizeValue.textContent =
+            brushSize.value;
+
+        draw();
+    }
+);
+
+/* ============================================================
+   CLEAR DRAWING
+   ============================================================ */
+
+clearDrawing.addEventListener(
+    "click",
+    () => {
+
+        drawingCtx.clearRect(
+            0,
+            0,
+            512,
+            512
+        );
+
+        if (particles.length)
+            refreshParticleColors();
+
+        draw();
+    }
+);
 
 /* ============================================================
    GENERATE
@@ -2721,14 +2616,13 @@ document
         async () => {
 
             const button =
-                document.getElementById(
-                    "generate"
-                );
-
+                document
+                    .getElementById(
+                        "generate"
+                    );
 
             button.disabled =
                 true;
-
 
             await new Promise(
                 resolve =>
@@ -2737,7 +2631,6 @@ document
                         20
                     )
             );
-
 
             try {
 
@@ -2763,7 +2656,6 @@ document
         }
     );
 
-
 /* ============================================================
    PLAY / PAUSE
    ============================================================ */
@@ -2779,16 +2671,13 @@ document
                 playing =
                     false;
 
-
                 if (animationFrame)
                     cancelAnimationFrame(
                         animationFrame
                     );
 
-
                 animationFrame =
                     null;
-
 
                 document
                     .getElementById(
@@ -2804,7 +2693,6 @@ document
         }
     );
 
-
 /* ============================================================
    RESET
    ============================================================ */
@@ -2815,7 +2703,6 @@ document
         "click",
         reset
     );
-
 
 /* ============================================================
    SOURCE / TARGET
@@ -2829,7 +2716,6 @@ document
             sourceFile.click()
     );
 
-
 document
     .getElementById("targetButton")
     .addEventListener(
@@ -2837,7 +2723,6 @@ document
         () =>
             targetFile.click()
     );
-
 
 sourceFile.addEventListener(
     "change",
@@ -2849,7 +2734,6 @@ sourceFile.addEventListener(
         if (!file)
             return;
 
-
         try {
 
             sourceImage =
@@ -2857,18 +2741,22 @@ sourceFile.addEventListener(
                     file
                 );
 
-
             sourceCanvas =
                 makeSquare(
                     sourceImage
                 );
 
+            drawingCtx.clearRect(
+                0,
+                0,
+                512,
+                512
+            );
 
             updatePreview(
                 sourceCanvas,
                 sourcePreview
             );
-
 
             particles = [];
 
@@ -2887,7 +2775,6 @@ sourceFile.addEventListener(
     }
 );
 
-
 targetFile.addEventListener(
     "change",
     async () => {
@@ -2898,7 +2785,6 @@ targetFile.addEventListener(
         if (!file)
             return;
 
-
         try {
 
             targetImage =
@@ -2906,18 +2792,15 @@ targetFile.addEventListener(
                     file
                 );
 
-
             targetCanvas =
                 makeSquare(
                     targetImage
                 );
 
-
             updatePreview(
                 targetCanvas,
                 targetPreview
             );
-
 
             particles = [];
 
@@ -2935,7 +2818,6 @@ targetFile.addEventListener(
         }
     }
 );
-
 
 /* ============================================================
    CROP
@@ -2956,18 +2838,15 @@ const cropCtx =
         "2d"
     );
 
-
 function openCrop(mode) {
 
     cropMode =
         mode;
 
-
     cropImage =
         mode === "source"
             ? sourceImage
             : targetImage;
-
 
     if (
         !cropImage &&
@@ -2978,7 +2857,6 @@ function openCrop(mode) {
             sourceCanvas;
     }
 
-
     if (
         !cropImage &&
         mode === "target"
@@ -2988,40 +2866,32 @@ function openCrop(mode) {
             targetCanvas;
     }
 
-
     if (!cropImage)
         return;
-
 
     document
         .getElementById("cropX")
         .value = 50;
 
-
     document
         .getElementById("cropY")
         .value = 50;
-
 
     document
         .getElementById("cropZoom")
         .value = 1;
 
-
     cropOverlay
         .classList
         .add("open");
 
-
     updateCropPreview();
 }
-
 
 function updateCropPreview() {
 
     if (!cropImage)
         return;
-
 
     const x =
         Number(
@@ -3030,7 +2900,6 @@ function updateCropPreview() {
                 .value
         ) / 100;
 
-
     const y =
         Number(
             document
@@ -3038,14 +2907,12 @@ function updateCropPreview() {
                 .value
         ) / 100;
 
-
     const zoom =
         Number(
             document
                 .getElementById("cropZoom")
                 .value
         );
-
 
     const image =
         makeSquare(
@@ -3055,13 +2922,11 @@ function updateCropPreview() {
             zoom
         );
 
-
     cropCanvas.width =
         512;
 
     cropCanvas.height =
         512;
-
 
     cropCtx.clearRect(
         0,
@@ -3070,14 +2935,12 @@ function updateCropPreview() {
         512
     );
 
-
     cropCtx.drawImage(
         image,
         0,
         0
     );
 }
-
 
 document
     .getElementById("sourceCrop")
@@ -3087,7 +2950,6 @@ document
             openCrop("source")
     );
 
-
 document
     .getElementById("targetCrop")
     .addEventListener(
@@ -3095,7 +2957,6 @@ document
         () =>
             openCrop("target")
     );
-
 
 for (
     const id
@@ -3114,7 +2975,6 @@ for (
         );
 }
 
-
 document
     .getElementById("cropCancel")
     .addEventListener(
@@ -3127,7 +2987,6 @@ document
         }
     );
 
-
 document
     .getElementById("cropApply")
     .addEventListener(
@@ -3136,7 +2995,6 @@ document
 
             if (!cropImage)
                 return;
-
 
             const x =
                 Number(
@@ -3147,7 +3005,6 @@ document
                         .value
                 ) / 100;
 
-
             const y =
                 Number(
                     document
@@ -3156,7 +3013,6 @@ document
                         )
                         .value
                 ) / 100;
-
 
             const zoom =
                 Number(
@@ -3167,7 +3023,6 @@ document
                         .value
                 );
 
-
             const cropped =
                 makeSquare(
                     cropImage,
@@ -3175,7 +3030,6 @@ document
                     y,
                     zoom
                 );
-
 
             if (
                 cropMode ===
@@ -3185,33 +3039,34 @@ document
                 sourceCanvas =
                     cropped;
 
-
                 sourcePreview.src =
                     cropped.toDataURL();
+
+                drawingCtx.clearRect(
+                    0,
+                    0,
+                    512,
+                    512
+                );
 
             } else {
 
                 targetCanvas =
                     cropped;
 
-
                 targetPreview.src =
                     cropped.toDataURL();
             }
 
-
             particles = [];
-
 
             cropOverlay
                 .classList
                 .remove("open");
 
-
             reset();
         }
     );
-
 
 /* ============================================================
    ADVANCED
@@ -3232,7 +3087,6 @@ document
         }
     );
 
-
 proximityInput.addEventListener(
     "input",
     () => {
@@ -3243,7 +3097,6 @@ proximityInput.addEventListener(
             ).toFixed(2);
     }
 );
-
 
 resolutionInput.addEventListener(
     "change",
@@ -3260,17 +3113,14 @@ resolutionInput.addEventListener(
                 )
             );
 
-
         resolutionInput.value =
             value;
-
 
         particles = [];
 
         reset();
     }
 );
-
 
 algorithmInput.addEventListener(
     "change",
@@ -3281,7 +3131,6 @@ algorithmInput.addEventListener(
         reset();
     }
 );
-
 
 /* ============================================================
    SAVE
@@ -3296,7 +3145,6 @@ document
             if (!particles.length)
                 buildPixels();
 
-
             if (
                 !canvas.captureStream ||
                 !window.MediaRecorder
@@ -3309,16 +3157,13 @@ document
                 return;
             }
 
-
             const stream =
                 canvas.captureStream(
                     30
                 );
 
-
             let mime =
                 "video/webm";
-
 
             if (
                 MediaRecorder
@@ -3331,7 +3176,6 @@ document
                     "video/webm;codecs=vp9";
             }
 
-
             const recorder =
                 new MediaRecorder(
                     stream,
@@ -3340,9 +3184,8 @@ document
                     }
                 );
 
-
-            const chunks = [];
-
+            const chunks =
+                [];
 
             recorder.ondataavailable =
                 event => {
@@ -3357,7 +3200,6 @@ document
                     }
                 };
 
-
             recorder.onstop =
                 () => {
 
@@ -3369,18 +3211,15 @@ document
                             }
                         );
 
-
                     const url =
                         URL.createObjectURL(
                             blob
                         );
 
-
                     const a =
                         document.createElement(
                             "a"
                         );
-
 
                     a.href =
                         url;
@@ -3388,16 +3227,13 @@ document
                     a.download =
                         "obamify.webm";
 
-
                     document
                         .body
                         .appendChild(a);
 
-
                     a.click();
 
                     a.remove();
-
 
                     setTimeout(
                         () =>
@@ -3408,13 +3244,10 @@ document
                     );
                 };
 
-
             recorder.start();
-
 
             const start =
                 performance.now();
-
 
             function record(time) {
 
@@ -3427,9 +3260,7 @@ document
                         ) / 5000
                     );
 
-
                 draw(p);
-
 
                 if (
                     p < 1
@@ -3449,13 +3280,11 @@ document
                 }
             }
 
-
             requestAnimationFrame(
                 record
             );
         }
     );
-
 
 /* ============================================================
    INITIALIZATION
@@ -3466,10 +3295,8 @@ async function init() {
     sourceCanvas =
         createDefaultSource();
 
-
     sourcePreview.src =
         sourceCanvas.toDataURL();
-
 
     try {
 
@@ -3477,7 +3304,6 @@ async function init() {
             await loadURL(
                 "https://raw.githubusercontent.com/Spu7Nix/obamify/main/assets/obama.png"
             );
-
 
         targetCanvas =
             makeSquare(
@@ -3490,14 +3316,11 @@ async function init() {
             createFallbackObama();
     }
 
-
     targetPreview.src =
         targetCanvas.toDataURL();
 
-
     resizeCanvas();
 }
-
 
 init();
 
