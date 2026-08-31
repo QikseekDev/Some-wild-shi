@@ -37,26 +37,8 @@ body {
     width: 100%;
     height: 100%;
     display: block;
-}
-
-#drawCanvas {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    display: none;
-    z-index: 10;
     touch-action: none;
-    cursor: crosshair;
 }
-
-#drawCanvas.open {
-    display: block;
-}
-
-/* ============================================================
-   CONTROLS
-   ============================================================ */
 
 #controls {
     position: fixed;
@@ -66,18 +48,18 @@ body {
     left: 50%;
     transform: translateX(-50%);
 
-    width: min(800px, calc(100vw - 16px));
+    width: min(900px, calc(100vw - 16px));
 
     padding: 6px;
 
     background: rgba(48, 48, 48, .96);
 
-    border: 1px solid rgba(255, 255, 255, .12);
+    border: 1px solid rgba(255,255,255,.12);
     border-radius: 4px;
 
     box-shadow:
-        0 2px 8px rgba(0, 0, 0, .45),
-        0 8px 24px rgba(0, 0, 0, .2);
+        0 2px 8px rgba(0,0,0,.45),
+        0 8px 24px rgba(0,0,0,.2);
 
     font-size: 13px;
 
@@ -137,9 +119,12 @@ select {
 input[type="number"] {
     width: 65px;
     min-height: 27px;
+
     padding: 3px 6px;
+
     color: white;
     background: #444;
+
     border: 1px solid #707070;
     border-radius: 3px;
 }
@@ -150,12 +135,12 @@ input[type="range"] {
 }
 
 input[type="color"] {
-    width: 32px;
+    width: 34px;
     height: 27px;
     padding: 1px;
     border: 1px solid #707070;
-    border-radius: 3px;
     background: #444;
+    border-radius: 3px;
 }
 
 .spacer {
@@ -168,7 +153,7 @@ input[type="color"] {
 }
 
 .value {
-    width: 38px;
+    width: 42px;
     text-align: right;
     color: #aaa;
     font-variant-numeric: tabular-nums;
@@ -188,10 +173,6 @@ input[type="color"] {
     background: #222;
 }
 
-/* ============================================================
-   ADVANCED
-   ============================================================ */
-
 #advanced {
     display: none;
 
@@ -205,20 +186,22 @@ input[type="color"] {
     display: block;
 }
 
-/* ============================================================
-   PROGRESS
-   ============================================================ */
+#drawControls {
+    display: none;
+}
+
+#drawControls.open {
+    display: block;
+}
 
 #progressContainer {
     width: 100%;
-    height: 5px;
+    height: 6px;
 
     margin-top: 6px;
 
-    background: #292929;
-
+    background: #282828;
     border-radius: 3px;
-
     overflow: hidden;
 }
 
@@ -228,115 +211,29 @@ input[type="color"] {
 
     background: #aaa;
 
-    transition: width .04s linear;
+    transition: width .05s linear;
 }
 
-/* ============================================================
-   DRAWING PANEL
-   ============================================================ */
-
-#drawTools {
-    display: none;
-
-    margin-top: 5px;
-    padding-top: 5px;
-
-    border-top: 1px solid rgba(255,255,255,.08);
-}
-
-#drawTools.open {
-    display: block;
-}
-
-.draw-indicator {
+#status {
     color: #aaa;
     font-size: 11px;
+    white-space: nowrap;
 }
 
-/* ============================================================
-   CROP
-   ============================================================ */
-
-#cropOverlay {
+#brushCursor {
     position: fixed;
-    inset: 0;
 
-    z-index: 100;
+    z-index: 90;
 
     display: none;
 
-    align-items: center;
-    justify-content: center;
+    pointer-events: none;
 
-    background: rgba(0,0,0,.75);
+    border: 1px solid rgba(255,255,255,.8);
+    border-radius: 50%;
+
+    transform: translate(-50%, -50%);
 }
-
-#cropOverlay.open {
-    display: flex;
-}
-
-#cropBox {
-    width: min(700px, calc(100vw - 24px));
-
-    padding: 12px;
-
-    background: #3e3e3e;
-
-    border: 1px solid #777;
-    border-radius: 5px;
-
-    box-shadow:
-        0 10px 50px rgba(0,0,0,.6);
-}
-
-#cropTitle {
-    margin-bottom: 10px;
-    font-weight: 600;
-}
-
-#cropPreview {
-    width: 100%;
-    height: min(55vh, 500px);
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    background: #222;
-
-    overflow: hidden;
-}
-
-#cropCanvas {
-    max-width: 100%;
-    max-height: 100%;
-}
-
-.crop-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 9px;
-}
-
-.crop-row span {
-    width: 80px;
-}
-
-.crop-row input {
-    flex: 1;
-}
-
-.crop-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 6px;
-    margin-top: 10px;
-}
-
-/* ============================================================
-   LINKS
-   ============================================================ */
 
 #links {
     position: fixed;
@@ -347,6 +244,7 @@ input[type="color"] {
 
     display: flex;
     flex-direction: column;
+
     gap: 10px;
 }
 
@@ -377,12 +275,82 @@ input[type="color"] {
     fill: white;
 }
 
-/* ============================================================
-   MOBILE
-   ============================================================ */
+#cropOverlay {
+    position: fixed;
+    inset: 0;
+
+    z-index: 100;
+
+    display: none;
+
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(0,0,0,.75);
+}
+
+#cropOverlay.open {
+    display: flex;
+}
+
+#cropBox {
+    width: min(700px, calc(100vw - 24px));
+
+    padding: 12px;
+
+    background: #3e3e3e;
+
+    border: 1px solid #777;
+    border-radius: 5px;
+
+    box-shadow: 0 10px 50px rgba(0,0,0,.6);
+}
+
+#cropTitle {
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+#cropPreview {
+    width: 100%;
+    height: min(55vh, 500px);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #222;
+    overflow: hidden;
+}
+
+#cropCanvas {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.crop-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 9px;
+}
+
+.crop-row span {
+    width: 80px;
+}
+
+.crop-row input {
+    flex: 1;
+}
+
+.crop-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-top: 10px;
+}
 
 @media (max-width: 600px) {
-
     #controls {
         top: 4px;
         width: calc(100vw - 8px);
@@ -408,7 +376,8 @@ input[type="color"] {
 <body>
 
 <canvas id="canvas"></canvas>
-<canvas id="drawCanvas"></canvas>
+
+<div id="brushCursor"></div>
 
 <div id="controls">
 
@@ -432,11 +401,11 @@ input[type="color"] {
             crop
         </button>
 
+        <div class="spacer"></div>
+
         <button id="drawButton">
             draw
         </button>
-
-        <div class="spacer"></div>
 
         <button id="play">
             ▶
@@ -458,6 +427,10 @@ input[type="color"] {
             advanced
         </button>
 
+        <div id="status">
+            ready
+        </div>
+
         <div class="spacer"></div>
 
         <button id="save">
@@ -466,23 +439,9 @@ input[type="color"] {
 
     </div>
 
-    <div id="progressContainer">
-        <div id="progressBar"></div>
-    </div>
-
-    <div id="drawTools">
+    <div id="drawControls">
 
         <div class="row">
-
-            <span class="label">
-                color
-            </span>
-
-            <input
-                id="drawColor"
-                type="color"
-                value="#ffffff"
-            >
 
             <span class="label">
                 brush
@@ -492,29 +451,31 @@ input[type="color"] {
                 id="brushSize"
                 type="range"
                 min="1"
-                max="40"
+                max="30"
                 step="1"
-                value="5"
+                value="4"
             >
 
             <span
-                id="brushValue"
+                id="brushSizeValue"
                 class="value"
             >
-                5
+                4
             </span>
+
+            <span class="label">
+                color
+            </span>
+
+            <input
+                id="brushColor"
+                type="color"
+                value="#ffffff"
+            >
 
             <button id="clearDrawing">
                 clear
             </button>
-
-            <button id="useDrawing">
-                use drawing
-            </button>
-
-            <span class="draw-indicator">
-                drawing source
-            </span>
 
         </div>
 
@@ -532,7 +493,7 @@ input[type="color"] {
                 id="resolution"
                 type="number"
                 min="8"
-                max="160"
+                max="128"
                 step="1"
                 value="64"
             >
@@ -585,7 +546,12 @@ input[type="color"] {
 
     </div>
 
+    <div id="progressContainer">
+        <div id="progressBar"></div>
+    </div>
+
 </div>
+
 
 <div id="cropOverlay">
 
@@ -670,6 +636,7 @@ input[type="color"] {
 
 </div>
 
+
 <div id="links">
 
     <a
@@ -681,7 +648,6 @@ input[type="color"] {
     >
 
         <svg viewBox="0 0 24 24">
-
             <path d="
                 M12 .5
                 C5.65 .5 .5 5.65 .5 12
@@ -709,7 +675,6 @@ input[type="color"] {
                 A11.51 11.51 0 0 0 23.5 12
                 C23.5 5.65 18.35 .5 12 .5z
             " />
-
         </svg>
 
     </a>
@@ -721,7 +686,6 @@ input[type="color"] {
         rel="noopener noreferrer"
         title="author"
     >
-
         <span
             style="
                 color:white;
@@ -731,10 +695,10 @@ input[type="color"] {
         >
             S
         </span>
-
     </a>
 
 </div>
+
 
 <input
     id="sourceFile"
@@ -750,8 +714,10 @@ input[type="color"] {
     hidden
 >
 
+
 <script>
 "use strict";
+
 
 /* ============================================================
    ELEMENTS
@@ -762,14 +728,6 @@ const canvas =
 
 const ctx =
     canvas.getContext("2d", {
-        alpha: false
-    });
-
-const drawCanvas =
-    document.getElementById("drawCanvas");
-
-const drawCtx =
-    drawCanvas.getContext("2d", {
         alpha: false
     });
 
@@ -800,17 +758,14 @@ const algorithmInput =
 const progressBar =
     document.getElementById("progressBar");
 
-const drawColor =
-    document.getElementById("drawColor");
+const statusElement =
+    document.getElementById("status");
 
-const brushSize =
-    document.getElementById("brushSize");
+const brushCursor =
+    document.getElementById("brushCursor");
 
-const brushValue =
-    document.getElementById("brushValue");
-
-const drawTools =
-    document.getElementById("drawTools");
+const drawControls =
+    document.getElementById("drawControls");
 
 
 /* ============================================================
@@ -826,21 +781,26 @@ let targetCanvas = null;
 let particles = [];
 
 let playing = false;
+
 let progress = 0;
 
 let animationStart = 0;
+
 let animationFrame = null;
 
 let cropMode = null;
 let cropImage = null;
 
+let drawingMode = false;
 let drawing = false;
-
-let drawingDirty = false;
-let drawingRebuildQueued = false;
 
 let lastDrawX = 0;
 let lastDrawY = 0;
+
+let drawingDirty = false;
+let drawingUpdateFrame = null;
+
+let drawGeneration = 0;
 
 
 /* ============================================================
@@ -876,8 +836,7 @@ function createDefaultSource() {
         "#222"
     );
 
-    x.fillStyle =
-        gradient;
+    x.fillStyle = gradient;
 
     x.fillRect(
         0,
@@ -905,8 +864,7 @@ function createFallbackObama() {
     const x =
         c.getContext("2d");
 
-    x.fillStyle =
-        "#27354b";
+    x.fillStyle = "#27354b";
 
     x.fillRect(
         0,
@@ -915,8 +873,7 @@ function createFallbackObama() {
         512
     );
 
-    x.fillStyle =
-        "#c9946b";
+    x.fillStyle = "#c9946b";
 
     x.beginPath();
 
@@ -932,8 +889,7 @@ function createFallbackObama() {
 
     x.fill();
 
-    x.fillStyle =
-        "#17120f";
+    x.fillStyle = "#17120f";
 
     x.beginPath();
 
@@ -949,8 +905,7 @@ function createFallbackObama() {
 
     x.fill();
 
-    x.fillStyle =
-        "#111";
+    x.fillStyle = "#111";
 
     x.beginPath();
 
@@ -976,11 +931,8 @@ function createFallbackObama() {
 
     x.fill();
 
-    x.strokeStyle =
-        "#633c2c";
-
-    x.lineWidth =
-        5;
+    x.strokeStyle = "#633c2c";
+    x.lineWidth = 5;
 
     x.beginPath();
 
@@ -994,8 +946,7 @@ function createFallbackObama() {
 
     x.stroke();
 
-    x.fillStyle =
-        "#111";
+    x.fillStyle = "#111";
 
     x.beginPath();
 
@@ -1018,80 +969,72 @@ function createFallbackObama() {
 
 function loadFile(file) {
 
-    return new Promise(
-        (resolve, reject) => {
+    return new Promise((resolve, reject) => {
 
-            if (
-                !file ||
-                !file.type.startsWith("image/")
-            ) {
+        if (
+            !file ||
+            !file.type.startsWith("image/")
+        ) {
 
-                reject(
-                    new Error(
-                        "Invalid image"
-                    )
-                );
+            reject(
+                new Error("Invalid image")
+            );
 
-                return;
-            }
-
-            const url =
-                URL.createObjectURL(file);
-
-            const img =
-                new Image();
-
-            img.onload = () => {
-
-                URL.revokeObjectURL(url);
-
-                resolve(img);
-            };
-
-            img.onerror = () => {
-
-                URL.revokeObjectURL(url);
-
-                reject(
-                    new Error(
-                        "Could not load image"
-                    )
-                );
-            };
-
-            img.src =
-                url;
+            return;
         }
-    );
+
+        const url =
+            URL.createObjectURL(file);
+
+        const img =
+            new Image();
+
+        img.onload = () => {
+
+            URL.revokeObjectURL(url);
+
+            resolve(img);
+        };
+
+        img.onerror = () => {
+
+            URL.revokeObjectURL(url);
+
+            reject(
+                new Error(
+                    "Could not load image"
+                )
+            );
+        };
+
+        img.src = url;
+    });
 }
 
 
 function loadURL(url) {
 
-    return new Promise(
-        (resolve, reject) => {
+    return new Promise((resolve, reject) => {
 
-            const img =
-                new Image();
+        const img =
+            new Image();
 
-            img.crossOrigin =
-                "anonymous";
+        img.crossOrigin =
+            "anonymous";
 
-            img.onload =
-                () => resolve(img);
+        img.onload =
+            () => resolve(img);
 
-            img.onerror =
-                () =>
-                    reject(
-                        new Error(
-                            "Could not load image"
-                        )
-                    );
+        img.onerror =
+            () =>
+                reject(
+                    new Error(
+                        "Could not load image"
+                    )
+                );
 
-            img.src =
-                url;
-        }
-    );
+        img.src = url;
+    });
 }
 
 
@@ -1130,25 +1073,16 @@ function makeSquare(
         height - visible;
 
     const sx =
-        Math.max(
-            0,
-            maxX * offsetX
-        );
+        maxX * offsetX;
 
     const sy =
-        Math.max(
-            0,
-            maxY * offsetY
-        );
+        maxY * offsetY;
 
     const c =
         document.createElement("canvas");
 
-    c.width =
-        512;
-
-    c.height =
-        512;
+    c.width = 512;
+    c.height = 512;
 
     const x =
         c.getContext("2d");
@@ -1177,12 +1111,12 @@ function makeSquare(
    ============================================================ */
 
 function updatePreview(
-    canvasElement,
-    previewElement
+    imageCanvas,
+    preview
 ) {
 
-    previewElement.src =
-        canvasElement.toDataURL(
+    preview.src =
+        imageCanvas.toDataURL(
             "image/jpeg",
             .85
         );
@@ -1226,31 +1160,6 @@ function resizeCanvas() {
         0
     );
 
-    drawCanvas.width =
-        Math.round(
-            innerWidth * dpr
-        );
-
-    drawCanvas.height =
-        Math.round(
-            innerHeight * dpr
-        );
-
-    drawCanvas.style.width =
-        innerWidth + "px";
-
-    drawCanvas.style.height =
-        innerHeight + "px";
-
-    drawCtx.setTransform(
-        dpr,
-        0,
-        0,
-        dpr,
-        0,
-        0
-    );
-
     draw();
 }
 
@@ -1264,472 +1173,32 @@ window.addEventListener(
 
 
 /* ============================================================
-   DRAWING CANVAS
+   DISPLAY GEOMETRY
    ============================================================ */
 
-function setupDrawingCanvas() {
+function getDisplayGeometry() {
 
-    drawCtx.clearRect(
-        0,
-        0,
-        innerWidth,
-        innerHeight
-    );
+    const width =
+        innerWidth;
 
-    drawCtx.fillStyle =
-        "#404040";
-
-    drawCtx.fillRect(
-        0,
-        0,
-        innerWidth,
-        innerHeight
-    );
-
-    if (!sourceCanvas)
-        return;
+    const height =
+        innerHeight;
 
     const size =
         Math.min(
-            innerWidth,
-            innerHeight
+            width,
+            height
         ) * .86;
-
-    const left =
-        (innerWidth - size) / 2;
-
-    const top =
-        (innerHeight - size) / 2;
-
-    drawCtx.imageSmoothingEnabled =
-        true;
-
-    drawCtx.drawImage(
-        sourceCanvas,
-        left,
-        top,
-        size,
-        size
-    );
-}
-
-
-/* ============================================================
-   DRAWING COORDINATES
-   ============================================================ */
-
-function screenToImage(
-    clientX,
-    clientY
-) {
-
-    const size =
-        Math.min(
-            innerWidth,
-            innerHeight
-        ) * .86;
-
-    const left =
-        (innerWidth - size) / 2;
-
-    const top =
-        (innerHeight - size) / 2;
 
     return {
+        size,
 
-        x:
-            (clientX - left) *
-            512 /
-            size,
+        left:
+            (width - size) / 2,
 
-        y:
-            (clientY - top) *
-            512 /
-            size
+        top:
+            (height - size) / 2
     };
-}
-
-
-/* ============================================================
-   DRAWING BRUSH
-   ============================================================ */
-
-function drawBrush(
-    x,
-    y
-) {
-
-    if (
-        x < 0 ||
-        y < 0 ||
-        x > 512 ||
-        y > 512
-    )
-        return;
-
-    const size =
-        Number(
-            brushSize.value
-        ) || 5;
-
-    const displaySize =
-        Math.min(
-            innerWidth,
-            innerHeight
-        ) * .86;
-
-    const scale =
-        displaySize / 512;
-
-    const radius =
-        Math.max(
-            1,
-            size * scale / 2
-        );
-
-    const px =
-        (
-            (innerWidth -
-            displaySize) / 2
-        ) +
-        x * scale;
-
-    const py =
-        (
-            (innerHeight -
-            displaySize) / 2
-        ) +
-        y * scale;
-
-    drawCtx.fillStyle =
-        drawColor.value;
-
-    drawCtx.beginPath();
-
-    drawCtx.arc(
-        px,
-        py,
-        radius,
-        0,
-        Math.PI * 2
-    );
-
-    drawCtx.fill();
-
-    drawingDirty =
-        true;
-
-    queueRealtimeSourceUpdate();
-}
-
-
-/* ============================================================
-   SMOOTH BRUSH LINE
-   ============================================================ */
-
-function drawLine(
-    x1,
-    y1,
-    x2,
-    y2
-) {
-
-    const distance =
-        Math.hypot(
-            x2 - x1,
-            y2 - y1
-        );
-
-    const size =
-        Number(
-            brushSize.value
-        ) || 5;
-
-    const steps =
-        Math.max(
-            1,
-            Math.ceil(
-                distance /
-                Math.max(
-                    1,
-                    size * .35
-                )
-            )
-        );
-
-    for (
-        let i = 0;
-        i <= steps;
-        i++
-    ) {
-
-        const t =
-            i / steps;
-
-        drawBrush(
-            x1 +
-            (x2 - x1) * t,
-
-            y1 +
-            (y2 - y1) * t
-        );
-    }
-}
-
-
-/* ============================================================
-   POINTER DRAWING
-   ============================================================ */
-
-drawCanvas.addEventListener(
-    "pointerdown",
-    event => {
-
-        if (
-            !drawCanvas.classList.contains("open")
-        )
-            return;
-
-        event.preventDefault();
-
-        drawing =
-            true;
-
-        drawCanvas.setPointerCapture(
-            event.pointerId
-        );
-
-        const p =
-            screenToImage(
-                event.clientX,
-                event.clientY
-            );
-
-        lastDrawX =
-            p.x;
-
-        lastDrawY =
-            p.y;
-
-        drawBrush(
-            p.x,
-            p.y
-        );
-    }
-);
-
-
-drawCanvas.addEventListener(
-    "pointermove",
-    event => {
-
-        if (!drawing)
-            return;
-
-        event.preventDefault();
-
-        const p =
-            screenToImage(
-                event.clientX,
-                event.clientY
-            );
-
-        drawLine(
-            lastDrawX,
-            lastDrawY,
-            p.x,
-            p.y
-        );
-
-        lastDrawX =
-            p.x;
-
-        lastDrawY =
-            p.y;
-    }
-);
-
-
-function stopDrawing(event) {
-
-    drawing =
-        false;
-
-    try {
-
-        if (
-            event &&
-            drawCanvas.hasPointerCapture(
-                event.pointerId
-            )
-        ) {
-
-            drawCanvas.releasePointerCapture(
-                event.pointerId
-            );
-        }
-
-    } catch {}
-}
-
-
-drawCanvas.addEventListener(
-    "pointerup",
-    stopDrawing
-);
-
-drawCanvas.addEventListener(
-    "pointercancel",
-    stopDrawing
-);
-
-drawCanvas.addEventListener(
-    "pointerleave",
-    event => {
-
-        if (
-            drawing &&
-            event.pointerType === "mouse"
-        )
-            drawing = false;
-    }
-);
-
-
-/* ============================================================
-   DRAWING → SOURCE
-   ============================================================ */
-
-function drawingSourceImageToDrawing() {
-
-    if (!drawCanvas)
-        return;
-
-    const c =
-        document.createElement("canvas");
-
-    c.width =
-        512;
-
-    c.height =
-        512;
-
-    const x =
-        c.getContext("2d", {
-            willReadFrequently: true
-        });
-
-    const size =
-        Math.min(
-            innerWidth,
-            innerHeight
-        ) * .86;
-
-    const left =
-        (innerWidth - size) / 2;
-
-    const top =
-        (innerHeight - size) / 2;
-
-    /*
-     * Copy only the image area.
-     * The surrounding UI/background is not
-     * allowed to become part of the source.
-     */
-
-    x.fillStyle =
-        "#404040";
-
-    x.fillRect(
-        0,
-        0,
-        512,
-        512
-    );
-
-    x.imageSmoothingEnabled =
-        true;
-
-    x.drawImage(
-        drawCanvas,
-        left,
-        top,
-        size,
-        size,
-        0,
-        0,
-        512,
-        512
-    );
-
-    sourceCanvas =
-        c;
-
-    sourceImage =
-        null;
-
-    updatePreview(
-        sourceCanvas,
-        sourcePreview
-    );
-
-    particles =
-        [];
-
-    progress =
-        0;
-
-    setProgress(
-        0
-    );
-
-    draw();
-
-    drawingDirty =
-        false;
-}
-
-
-/* ============================================================
-   REALTIME DRAWING SOURCE UPDATE
-   ============================================================ */
-
-function queueRealtimeSourceUpdate() {
-
-    if (drawingRebuildQueued)
-        return;
-
-    drawingRebuildQueued =
-        true;
-
-    requestAnimationFrame(
-        () => {
-
-            drawingRebuildQueued =
-                false;
-
-            if (!drawingDirty)
-                return;
-
-            drawingSourceImageToDrawing();
-
-            /*
-             * If an animation is currently running,
-             * rebuild the particle mapping from the
-             * new drawing and keep the current progress.
-             */
-
-            if (
-                playing &&
-                targetCanvas
-            ) {
-
-                buildPixels();
-
-                draw(progress);
-            }
-        }
-    );
 }
 
 
@@ -1764,88 +1233,33 @@ function colorDistance(
 
 
 /* ============================================================
-   PIXEL BUILD
+   BUILD PIXEL DATA
    ============================================================ */
 
-function buildPixels() {
+function getPixelData(
+    imageCanvas,
+    resolution
+) {
 
-    if (
-        !sourceCanvas ||
-        !targetCanvas
-    )
-        return;
-
-    const requested =
-        Number(
-            resolutionInput.value
-        );
-
-    const resolution =
-        Math.max(
-            8,
-            Math.min(
-                160,
-                Number.isFinite(requested)
-                    ? Math.floor(requested)
-                    : 64
-            )
-        );
-
-    resolutionInput.value =
-        resolution;
-
-    const sourceData =
-        sourceCanvas
-            .getContext(
-                "2d",
-                {
-                    willReadFrequently: true
-                }
-            )
+    const data =
+        imageCanvas
+            .getContext("2d")
             .getImageData(
                 0,
                 0,
                 512,
                 512
-            )
-            .data;
-
-    const targetData =
-        targetCanvas
-            .getContext(
-                "2d",
-                {
-                    willReadFrequently: true
-                }
-            )
-            .getImageData(
-                0,
-                0,
-                512,
-                512
-            )
-            .data;
+            ).data;
 
     const step =
         512 / resolution;
 
-    const total =
-        resolution *
-        resolution;
+    const pixels =
+        new Array(
+            resolution * resolution
+        );
 
-    const source =
-        new Array(total);
-
-    const target =
-        new Array(total);
-
-
-    /*
-     * Read all pixels once.
-     */
-
-    let index =
-        0;
+    let index = 0;
 
     for (
         let y = 0;
@@ -1863,8 +1277,7 @@ function buildPixels() {
                 Math.min(
                     511,
                     Math.floor(
-                        (x + .5) *
-                        step
+                        (x + .5) * step
                     )
                 );
 
@@ -1872,37 +1285,29 @@ function buildPixels() {
                 Math.min(
                     511,
                     Math.floor(
-                        (y + .5) *
-                        step
+                        (y + .5) * step
                     )
                 );
 
-            const dataIndex =
+            const sourceIndex =
                 (
                     py * 512 +
                     px
                 ) * 4;
 
             const r =
-                sourceData[dataIndex];
+                data[sourceIndex];
 
             const g =
-                sourceData[
-                    dataIndex + 1
-                ];
+                data[sourceIndex + 1];
 
             const b =
-                sourceData[
-                    dataIndex + 2
-                ];
+                data[sourceIndex + 2];
 
-            source[index] = {
+            pixels[index++] = {
 
-                x:
-                    x + .5,
-
-                y:
-                    y + .5,
+                x: x + .5,
+                y: y + .5,
 
                 r,
                 g,
@@ -1913,70 +1318,767 @@ function buildPixels() {
                         r +
                         g +
                         b
-                    ) / 3,
-
-                index
+                    ) / 3
             };
-
-            const tr =
-                targetData[dataIndex];
-
-            const tg =
-                targetData[
-                    dataIndex + 1
-                ];
-
-            const tb =
-                targetData[
-                    dataIndex + 2
-                ];
-
-            target[index] = {
-
-                x:
-                    x + .5,
-
-                y:
-                    y + .5,
-
-                r: tr,
-                g: tg,
-                b: tb,
-
-                brightness:
-                    (
-                        tr +
-                        tg +
-                        tb
-                    ) / 3,
-
-                index,
-
-                used: false
-            };
-
-            index++;
         }
+    }
+
+    return pixels;
+}
+
+
+/* ============================================================
+   FAST ONE-TO-ONE MATCHING
+   ============================================================
+
+   Important difference from the broken version:
+
+   A target position is reserved immediately.
+
+   There is NO duplicate repair pass.
+
+   Every source pixel receives exactly one unique
+   destination.
+
+   The RGB values of the source are never changed.
+   ============================================================ */
+
+function buildFastAssignments(
+    source,
+    target,
+    proximity
+) {
+
+    const count =
+        source.length;
+
+    const result =
+        new Array(count);
+
+    const used =
+        new Uint8Array(count);
+
+
+    /*
+     * Sort both images by brightness.
+     *
+     * This gives us a very good initial approximation
+     * while remaining extremely cheap.
+     */
+
+    const sourceOrder =
+        Array.from(
+            { length: count },
+            (_, i) => i
+        );
+
+    const targetOrder =
+        Array.from(
+            { length: count },
+            (_, i) => i
+        );
+
+    sourceOrder.sort(
+        (a, b) =>
+            source[a].brightness -
+            source[b].brightness
+    );
+
+    targetOrder.sort(
+        (a, b) =>
+            target[a].brightness -
+            target[b].brightness
+    );
+
+
+    /*
+     * Assign brightness ranks first.
+     */
+
+    for (
+        let rank = 0;
+        rank < count;
+        rank++
+    ) {
+
+        const sourceIndex =
+            sourceOrder[rank];
+
+        const targetIndex =
+            targetOrder[rank];
+
+        result[sourceIndex] =
+            targetIndex;
     }
 
 
     /*
-     * Brightness sorting gives the same general
-     * pixel-to-pixel structure without doing an
-     * expensive full N² matching operation.
+     * Local refinement.
+     *
+     * Only swap destinations.
+     *
+     * Source RGB stays untouched.
      */
 
-    source.sort(
-        (a, b) =>
-            a.brightness -
-            b.brightness
+    const iterations =
+        proximity <= .05
+            ? 1
+            : 2;
+
+
+    for (
+        let iteration = 0;
+        iteration < iterations;
+        iteration++
+    ) {
+
+        for (
+            let i = 0;
+            i < count;
+            i++
+        ) {
+
+            const targetIndex =
+                result[i];
+
+            if (
+                targetIndex == null
+            )
+                continue;
+
+
+            const p =
+                source[i];
+
+            const q =
+                target[targetIndex];
+
+
+            /*
+             * Check a small neighborhood in
+             * brightness order.
+
+             * This avoids the O(n²) behavior that
+             * caused the lag in the previous version.
+             */
+
+            const rank =
+                Math.floor(
+                    (
+                        source[i].brightness / 256
+                    ) * count
+                );
+
+
+            const window =
+                proximity > .5
+                    ? 18
+                    : 10;
+
+
+            let bestIndex =
+                targetIndex;
+
+            let bestScore =
+                Infinity;
+
+
+            const center =
+                Math.max(
+                    0,
+                    Math.min(
+                        count - 1,
+                        rank
+                    )
+                );
+
+
+            const start =
+                Math.max(
+                    0,
+                    center - window
+                );
+
+            const end =
+                Math.min(
+                    count,
+                    center + window + 1
+                );
+
+
+            for (
+                let r = start;
+                r < end;
+                r++
+            ) {
+
+                const candidateIndex =
+                    targetOrder[r];
+
+                if (
+                    used[candidateIndex]
+                )
+                    continue;
+
+
+                const candidate =
+                    target[candidateIndex];
+
+
+                const color =
+                    colorDistance(
+                        p.r,
+                        p.g,
+                        p.b,
+                        candidate.r,
+                        candidate.g,
+                        candidate.b
+                    );
+
+
+                const dx =
+                    p.x -
+                    candidate.x;
+
+                const dy =
+                    p.y -
+                    candidate.y;
+
+
+                const distance =
+                    dx * dx +
+                    dy * dy;
+
+
+                const score =
+                    color +
+                    distance *
+                    proximity *
+                    80;
+
+
+                if (
+                    score <
+                    bestScore
+                ) {
+
+                    bestScore =
+                        score;
+
+                    bestIndex =
+                        candidateIndex;
+                }
+            }
+
+
+            result[i] =
+                bestIndex;
+        }
+
+
+        /*
+         * Rebuild uniqueness from scratch.
+         */
+
+        used.fill(0);
+
+        for (
+            let i = 0;
+            i < count;
+            i++
+        ) {
+
+            let destination =
+                result[i];
+
+
+            if (
+                used[destination]
+            ) {
+
+                /*
+                 * Search outward for the nearest
+                 * unused brightness position.
+                 */
+
+                const original =
+                    targetOrder.findIndex(
+                        v =>
+                            v === destination
+                    );
+
+
+                let found =
+                    -1;
+
+
+                for (
+                    let radius = 1;
+                    radius < count;
+                    radius++
+                ) {
+
+                    const a =
+                        original - radius;
+
+                    const b =
+                        original + radius;
+
+
+                    if (
+                        a >= 0 &&
+                        !used[targetOrder[a]]
+                    ) {
+
+                        found =
+                            targetOrder[a];
+
+                        break;
+                    }
+
+
+                    if (
+                        b < count &&
+                        !used[targetOrder[b]]
+                    ) {
+
+                        found =
+                            targetOrder[b];
+
+                        break;
+                    }
+                }
+
+
+                if (
+                    found >= 0
+                ) {
+
+                    destination =
+                        found;
+
+                    result[i] =
+                        destination;
+                }
+            }
+
+
+            used[destination] =
+                1;
+        }
+    }
+
+
+    return result;
+}
+
+
+/* ============================================================
+   BETTER MATCHING
+   ============================================================ */
+
+function buildOptimalAssignments(
+    source,
+    target,
+    proximity
+) {
+
+    const count =
+        source.length;
+
+    const result =
+        new Int32Array(count);
+
+    const used =
+        new Uint8Array(count);
+
+
+    /*
+     * Instead of comparing every pixel with every
+     * other pixel, bucket target pixels by brightness.
+     */
+
+    const buckets =
+        Array.from(
+            { length: 256 },
+            () => []
+        );
+
+
+    for (
+        let i = 0;
+        i < count;
+        i++
+    ) {
+
+        const brightness =
+            Math.max(
+                0,
+                Math.min(
+                    255,
+                    Math.round(
+                        target[i].brightness
+                    )
+                )
+            );
+
+        buckets[brightness].push(i);
+    }
+
+
+    /*
+     * Process visually distinctive pixels first.
+     */
+
+    const order =
+        Array.from(
+            { length: count },
+            (_, i) => i
+        );
+
+
+    order.sort(
+        (a, b) => {
+
+            const ar =
+                source[a].r;
+
+            const ag =
+                source[a].g;
+
+            const ab =
+                source[a].b;
+
+            const br =
+                source[b].r;
+
+            const bg =
+                source[b].g;
+
+            const bb =
+                source[b].b;
+
+
+            const as =
+                Math.max(ar, ag, ab) -
+                Math.min(ar, ag, ab);
+
+            const bs =
+                Math.max(br, bg, bb) -
+                Math.min(br, bg, bb);
+
+
+            return bs - as;
+        }
     );
 
-    target.sort(
-        (a, b) =>
-            a.brightness -
-            b.brightness
-    );
+
+    for (
+        let oi = 0;
+        oi < order.length;
+        oi++
+    ) {
+
+        const sourceIndex =
+            order[oi];
+
+        const p =
+            source[sourceIndex];
+
+
+        const brightness =
+            Math.round(
+                p.brightness
+            );
+
+
+        const searchRadius =
+            algorithmInput.value === "optimal"
+                ? 18
+                : 8;
+
+
+        let best =
+            -1;
+
+        let bestScore =
+            Infinity;
+
+
+        for (
+            let radius = 0;
+            radius <= searchRadius;
+            radius++
+        ) {
+
+            const low =
+                brightness - radius;
+
+            const high =
+                brightness + radius;
+
+
+            if (
+                low >= 0
+            ) {
+
+                const bucket =
+                    buckets[low];
+
+
+                for (
+                    let k = 0;
+                    k < bucket.length;
+                    k++
+                ) {
+
+                    const targetIndex =
+                        bucket[k];
+
+
+                    if (
+                        used[targetIndex]
+                    )
+                        continue;
+
+
+                    const q =
+                        target[targetIndex];
+
+
+                    const color =
+                        colorDistance(
+                            p.r,
+                            p.g,
+                            p.b,
+                            q.r,
+                            q.g,
+                            q.b
+                        );
+
+
+                    const dx =
+                        p.x -
+                        q.x;
+
+                    const dy =
+                        p.y -
+                        q.y;
+
+
+                    const spatial =
+                        dx * dx +
+                        dy * dy;
+
+
+                    const score =
+                        color +
+                        spatial *
+                        proximity *
+                        80;
+
+
+                    if (
+                        score <
+                        bestScore
+                    ) {
+
+                        bestScore =
+                            score;
+
+                        best =
+                            targetIndex;
+                    }
+                }
+            }
+
+
+            if (
+                high <= 255 &&
+                high !== low
+            ) {
+
+                const bucket =
+                    buckets[high];
+
+
+                for (
+                    let k = 0;
+                    k < bucket.length;
+                    k++
+                ) {
+
+                    const targetIndex =
+                        bucket[k];
+
+
+                    if (
+                        used[targetIndex]
+                    )
+                        continue;
+
+
+                    const q =
+                        target[targetIndex];
+
+
+                    const color =
+                        colorDistance(
+                            p.r,
+                            p.g,
+                            p.b,
+                            q.r,
+                            q.g,
+                            q.b
+                        );
+
+
+                    const dx =
+                        p.x -
+                        q.x;
+
+                    const dy =
+                        p.y -
+                        q.y;
+
+
+                    const spatial =
+                        dx * dx +
+                        dy * dy;
+
+
+                    const score =
+                        color +
+                        spatial *
+                        proximity *
+                        80;
+
+
+                    if (
+                        score <
+                        bestScore
+                    ) {
+
+                        bestScore =
+                            score;
+
+                        best =
+                            targetIndex;
+                    }
+                }
+            }
+
+
+            /*
+             * If we already found a very good
+             * color match, don't keep searching.
+             */
+
+            if (
+                best >= 0 &&
+                bestScore < 300
+            )
+                break;
+        }
+
+
+        /*
+         * Guaranteed fallback.
+         */
+
+        if (
+            best < 0
+        ) {
+
+            for (
+                let i = 0;
+                i < count;
+                i++
+            ) {
+
+                if (
+                    !used[i]
+                ) {
+
+                    best =
+                        i;
+
+                    break;
+                }
+            }
+        }
+
+
+        result[sourceIndex] =
+            best;
+
+        used[best] =
+            1;
+    }
+
+
+    return result;
+}
+
+
+/* ============================================================
+   BUILD PARTICLES
+   ============================================================ */
+
+function buildPixels() {
+
+    if (
+        !sourceCanvas ||
+        !targetCanvas
+    )
+        return;
+
+
+    const requested =
+        Number(
+            resolutionInput.value
+        );
+
+
+    const resolution =
+        Math.max(
+            8,
+            Math.min(
+                128,
+                Number.isFinite(requested)
+                    ? Math.floor(requested)
+                    : 64
+            )
+        );
+
+
+    resolutionInput.value =
+        resolution;
+
+
+    statusElement.textContent =
+        "reading pixels...";
+
+    progressBar.style.width =
+        "5%";
+
+
+    const source =
+        getPixelData(
+            sourceCanvas,
+            resolution
+        );
+
+
+    const target =
+        getPixelData(
+            targetCanvas,
+            resolution
+        );
+
+
+    progressBar.style.width =
+        "20%";
 
 
     const proximity =
@@ -1991,250 +2093,72 @@ function buildPixels() {
         );
 
 
-    /*
-     * Number of local swaps/refinements.
-     *
-     * Fast mode intentionally performs very little
-     * work because this function can be called while
-     * drawing.
-     */
-
-    const iterations =
-        algorithmInput.value === "fast"
-            ? 1
-            : 4;
+    let assignments;
 
 
-    /*
-     * Initial brightness assignment.
-     */
-
-    const assignments =
-        new Array(total);
-
-    for (
-        let i = 0;
-        i < total;
-        i++
+    if (
+        algorithmInput.value === "optimal"
     ) {
 
-        assignments[
-            source[i].index
-        ] =
-            target[i];
+        statusElement.textContent =
+            "matching pixels...";
+
+        assignments =
+            buildOptimalAssignments(
+                source,
+                target,
+                proximity
+            );
+
+    } else {
+
+        statusElement.textContent =
+            "matching pixels...";
+
+        assignments =
+            buildFastAssignments(
+                source,
+                target,
+                proximity
+            );
     }
 
 
-    /*
-     * Local refinement.
-     *
-     * Instead of searching every target pixel,
-     * only inspect a small neighborhood around
-     * the brightness-matched position.
-     */
-
-    const windowSize =
-        algorithmInput.value === "fast"
-            ? 5
-            : 14;
+    progressBar.style.width =
+        "80%";
 
 
-    for (
-        let pass = 0;
-        pass < iterations;
-        pass++
-    ) {
-
-        for (
-            let i = 0;
-            i < total;
-            i++
-        ) {
-
-            const p =
-                source[i];
-
-            const current =
-                assignments[
-                    p.index
-                ];
-
-            const center =
-                Math.round(
-                    (
-                        current.index
-                    )
-                );
-
-            let best =
-                current;
-
-            let bestScore =
-                Infinity;
-
-            const start =
-                Math.max(
-                    0,
-                    center -
-                    windowSize
-                );
-
-            const end =
-                Math.min(
-                    total - 1,
-                    center +
-                    windowSize
-                );
-
-            for (
-                let j = start;
-                j <= end;
-                j++
-            ) {
-
-                const q =
-                    target[j];
-
-                const color =
-                    colorDistance(
-                        p.r,
-                        p.g,
-                        p.b,
-                        q.r,
-                        q.g,
-                        q.b
-                    );
-
-                const dx =
-                    p.x -
-                    q.x;
-
-                const dy =
-                    p.y -
-                    q.y;
-
-                const spatial =
-                    dx * dx +
-                    dy * dy;
-
-                const score =
-                    color +
-                    spatial *
-                    proximity *
-                    100;
-
-                if (
-                    score <
-                    bestScore
-                ) {
-
-                    bestScore =
-                        score;
-
-                    best =
-                        q;
-                }
-            }
-
-            assignments[
-                p.index
-            ] =
-                best;
-        }
-    }
-
-
-    /*
-     * Resolve duplicate destinations cheaply.
-     */
-
-    const used =
-        new Uint8Array(total);
-
-    const result =
-        new Array(total);
+    particles =
+        new Array(
+            source.length
+        );
 
 
     for (
         let i = 0;
-        i < total;
+        i < source.length;
         i++
     ) {
 
         const p =
             source[i];
 
-        let destination =
-            assignments[
-                p.index
+        const destination =
+            target[
+                assignments[i]
             ];
 
-        if (
-            used[
-                destination.index
-            ]
-        ) {
 
-            /*
-             * Search outward from the current
-             * brightness position.
-             */
+        /*
+         * THIS IS THE IMPORTANT PART.
+         *
+         * r/g/b come ONLY from the source.
+         *
+         * Target colors are used exclusively
+         * to decide where the pixel moves.
+         */
 
-            let replacement =
-                null;
-
-            const center =
-                destination.index;
-
-            for (
-                let radius = 1;
-                radius < total;
-                radius++
-            ) {
-
-                const left =
-                    center - radius;
-
-                const right =
-                    center + radius;
-
-                if (
-                    left >= 0 &&
-                    !used[
-                        target[left].index
-                    ]
-                ) {
-
-                    replacement =
-                        target[left];
-
-                    break;
-                }
-
-                if (
-                    right < total &&
-                    !used[
-                        target[right].index
-                    ]
-                ) {
-
-                    replacement =
-                        target[right];
-
-                    break;
-                }
-            }
-
-            if (replacement)
-                destination =
-                    replacement;
-        }
-
-        used[
-            destination.index
-        ] = 1;
-
-        result[i] = {
+        particles[i] = {
 
             ox:
                 p.x,
@@ -2248,12 +2172,6 @@ function buildPixels() {
             ty:
                 destination.y,
 
-            /*
-             * SOURCE COLOR ONLY.
-             *
-             * Target colors never get drawn.
-             */
-
             r:
                 p.r,
 
@@ -2265,12 +2183,14 @@ function buildPixels() {
         };
     }
 
-    particles =
-        result;
 
-    setProgress(
-        0
-    );
+    progressBar.style.width =
+        "100%";
+
+    statusElement.textContent =
+        `${source.length} pixels`;
+
+    draw();
 }
 
 
@@ -2291,27 +2211,38 @@ function ease(t) {
 
 
 /* ============================================================
-   PROGRESS
+   DRAW IMAGE
    ============================================================ */
 
-function setProgress(value) {
+function drawSourceImage() {
 
-    const percentage =
-        Math.max(
-            0,
-            Math.min(
-                100,
-                value * 100
-            )
-        );
+    if (!sourceCanvas)
+        return;
 
-    progressBar.style.width =
-        percentage + "%";
+
+    const {
+        size,
+        left,
+        top
+    } =
+        getDisplayGeometry();
+
+
+    ctx.imageSmoothingEnabled =
+        true;
+
+    ctx.drawImage(
+        sourceCanvas,
+        left,
+        top,
+        size,
+        size
+    );
 }
 
 
 /* ============================================================
-   DRAW
+   DRAW PARTICLES
    ============================================================ */
 
 function draw(
@@ -2324,6 +2255,7 @@ function draw(
     const height =
         innerHeight;
 
+
     ctx.fillStyle =
         "#404040";
 
@@ -2334,72 +2266,63 @@ function draw(
         height
     );
 
-    if (!sourceCanvas)
+
+    if (
+        !sourceCanvas
+    )
         return;
 
-    const size =
-        Math.min(
-            width,
-            height
-        ) * .86;
 
-    const left =
-        (width - size) / 2;
+    if (
+        !particles.length
+    ) {
 
-    const top =
-        (height - size) / 2;
-
-
-    if (!particles.length) {
-
-        ctx.imageSmoothingEnabled =
-            true;
-
-        ctx.drawImage(
-            sourceCanvas,
-            left,
-            top,
-            size,
-            size
-        );
+        drawSourceImage();
 
         return;
     }
+
+
+    const {
+        size,
+        left,
+        top
+    } =
+        getDisplayGeometry();
 
 
     const resolution =
         Math.max(
             8,
             Math.min(
-                160,
+                128,
                 Number(
                     resolutionInput.value
                 ) || 64
             )
         );
 
-    const cell =
-        size /
-        resolution;
 
-    const p =
-        Math.max(
-            0,
-            Math.min(
-                1,
-                animationProgress
+    const cell =
+        size / resolution;
+
+
+    const e =
+        ease(
+            Math.max(
+                0,
+                Math.min(
+                    1,
+                    animationProgress
+                )
             )
         );
 
-    const e =
-        ease(p);
-
 
     /*
-     * Draw source pixels.
-     *
-     * RGB is completely fixed.
-     * ONLY X/Y changes.
+     * Pixels move.
+
+     * Their colors NEVER interpolate.
      */
 
     for (
@@ -2408,25 +2331,29 @@ function draw(
         i++
     ) {
 
-        const particle =
+        const p =
             particles[i];
 
+
         const x =
-            particle.ox +
+            p.ox +
             (
-                particle.tx -
-                particle.ox
+                p.tx -
+                p.ox
             ) * e;
+
 
         const y =
-            particle.oy +
+            p.oy +
             (
-                particle.ty -
-                particle.oy
+                p.ty -
+                p.oy
             ) * e;
 
+
         ctx.fillStyle =
-            `rgb(${particle.r},${particle.g},${particle.b})`;
+            `rgb(${p.r},${p.g},${p.b})`;
+
 
         ctx.fillRect(
             left +
@@ -2435,10 +2362,32 @@ function draw(
             top +
             y * cell,
 
-            cell + .75,
-            cell + .75
+            Math.ceil(cell) + 1,
+            Math.ceil(cell) + 1
         );
     }
+}
+
+
+/* ============================================================
+   PROGRESS
+   ============================================================ */
+
+function setProgress(
+    value
+) {
+
+    const v =
+        Math.max(
+            0,
+            Math.min(
+                1,
+                value
+            )
+        );
+
+    progressBar.style.width =
+        `${v * 100}%`;
 }
 
 
@@ -2451,8 +2400,10 @@ function animationLoop(time) {
     if (!playing)
         return;
 
+
     const duration =
         5000;
+
 
     progress =
         Math.min(
@@ -2463,13 +2414,15 @@ function animationLoop(time) {
             ) / duration
         );
 
-    draw(
-        progress
-    );
 
-    setProgress(
-        progress
-    );
+    setProgress(progress);
+
+    statusElement.textContent =
+        `moving pixels ${Math.round(progress * 100)}%`;
+
+
+    draw(progress);
+
 
     if (
         progress >= 1
@@ -2478,20 +2431,20 @@ function animationLoop(time) {
         playing =
             false;
 
-        animationFrame =
-            null;
-
         document
             .getElementById("play")
             .textContent =
                 "▶";
 
-        setProgress(
-            1
-        );
+        statusElement.textContent =
+            "complete";
+
+        animationFrame =
+            null;
 
         return;
     }
+
 
     animationFrame =
         requestAnimationFrame(
@@ -2503,25 +2456,30 @@ function animationLoop(time) {
 function startAnimation() {
 
     if (
-        !sourceCanvas ||
-        !targetCanvas
-    )
-        return;
+        !particles.length
+    ) {
 
-    if (!particles.length)
         buildPixels();
 
-    if (animationFrame)
+        if (
+            !particles.length
+        )
+            return;
+    }
+
+
+    if (
+        animationFrame
+    ) {
+
         cancelAnimationFrame(
             animationFrame
         );
+    }
+
 
     progress =
         0;
-
-    setProgress(
-        0
-    );
 
     playing =
         true;
@@ -2529,10 +2487,12 @@ function startAnimation() {
     animationStart =
         performance.now();
 
+
     document
         .getElementById("play")
         .textContent =
             "Ⅱ";
+
 
     animationFrame =
         requestAnimationFrame(
@@ -2546,10 +2506,16 @@ function reset() {
     playing =
         false;
 
-    if (animationFrame)
+
+    if (
+        animationFrame
+    ) {
+
         cancelAnimationFrame(
             animationFrame
         );
+    }
+
 
     animationFrame =
         null;
@@ -2557,17 +2523,20 @@ function reset() {
     progress =
         0;
 
-    setProgress(
-        0
-    );
+    setProgress(0);
+
 
     document
         .getElementById("play")
         .textContent =
             "▶";
 
-    particles =
-        [];
+
+    statusElement.textContent =
+        particles.length
+            ? "ready"
+            : "source";
+
 
     draw();
 }
@@ -2581,57 +2550,51 @@ document
     .getElementById("generate")
     .addEventListener(
         "click",
-        () => {
+        async () => {
 
             const button =
                 document.getElementById(
                     "generate"
                 );
 
-            if (
-                !sourceCanvas ||
-                !targetCanvas
-            )
-                return;
 
             button.disabled =
                 true;
 
-            /*
-             * Give the browser one frame to update
-             * the button before doing the calculation.
-             */
 
-            requestAnimationFrame(
-                () => {
+            try {
 
-                    try {
+                await new Promise(
+                    resolve =>
+                        setTimeout(
+                            resolve,
+                            10
+                        )
+                );
 
-                        setProgress(
-                            0
-                        );
 
-                        buildPixels();
+                buildPixels();
 
-                        startAnimation();
+                startAnimation();
 
-                    } catch (error) {
+            } catch (error) {
 
-                        console.error(
-                            error
-                        );
+                console.error(
+                    error
+                );
 
-                        alert(
-                            "Failed to generate."
-                        );
+                statusElement.textContent =
+                    "generation failed";
 
-                    } finally {
+                alert(
+                    "Failed to generate."
+                );
 
-                        button.disabled =
-                            false;
-                    }
-                }
-            );
+            } finally {
+
+                button.disabled =
+                    false;
+            }
         }
     );
 
@@ -2651,20 +2614,29 @@ document
                 playing =
                     false;
 
-                if (animationFrame)
+
+                if (
+                    animationFrame
+                ) {
+
                     cancelAnimationFrame(
                         animationFrame
                     );
+                }
+
 
                 animationFrame =
                     null;
 
+
                 document
-                    .getElementById(
-                        "play"
-                    )
+                    .getElementById("play")
                     .textContent =
                         "▶";
+
+
+                statusElement.textContent =
+                    `paused ${Math.round(progress * 100)}%`;
 
             } else {
 
@@ -2698,6 +2670,7 @@ document
             sourceFile.click()
     );
 
+
 document
     .getElementById("targetButton")
     .addEventListener(
@@ -2707,207 +2680,692 @@ document
     );
 
 
-sourceFile.addEventListener(
-    "change",
-    async () => {
-
-        const file =
-            sourceFile.files[0];
-
-        if (!file)
-            return;
-
-        try {
-
-            sourceImage =
-                await loadFile(
-                    file
-                );
-
-            sourceCanvas =
-                makeSquare(
-                    sourceImage
-                );
-
-            updatePreview(
-                sourceCanvas,
-                sourcePreview
-            );
-
-            particles =
-                [];
-
-            reset();
-
-        } catch (error) {
-
-            console.error(
-                error
-            );
-
-            alert(
-                "Failed to load source image."
-            );
-        }
-    }
-);
-
-
-targetFile.addEventListener(
-    "change",
-    async () => {
-
-        const file =
-            targetFile.files[0];
-
-        if (!file)
-            return;
-
-        try {
-
-            targetImage =
-                await loadFile(
-                    file
-                );
-
-            targetCanvas =
-                makeSquare(
-                    targetImage
-                );
-
-            updatePreview(
-                targetCanvas,
-                targetPreview
-            );
-
-            particles =
-                [];
-
-            reset();
-
-        } catch (error) {
-
-            console.error(
-                error
-            );
-
-            alert(
-                "Failed to load target image."
-            );
-        }
-    }
-);
-
-
-/* ============================================================
-   DRAW BUTTON
-   ============================================================ */
-
-document
-    .getElementById("drawButton")
+sourceFile
     .addEventListener(
-        "click",
-        () => {
+        "change",
+        async () => {
 
-            const open =
-                drawCanvas.classList.toggle(
-                    "open"
+            const file =
+                sourceFile.files[0];
+
+            if (!file)
+                return;
+
+
+            try {
+
+                sourceImage =
+                    await loadFile(
+                        file
+                    );
+
+
+                sourceCanvas =
+                    makeSquare(
+                        sourceImage
+                    );
+
+
+                updatePreview(
+                    sourceCanvas,
+                    sourcePreview
                 );
 
-            drawTools.classList.toggle(
-                "open",
-                open
-            );
 
-            if (open) {
+                particles = [];
 
-                setupDrawingCanvas();
+                reset();
 
-                document
-                    .getElementById(
-                        "drawButton"
-                    )
-                    .textContent =
-                        "close draw";
+            } catch (error) {
 
-            } else {
+                console.error(
+                    error
+                );
 
-                document
-                    .getElementById(
-                        "drawButton"
-                    )
-                    .textContent =
-                        "draw";
+                alert(
+                    "Failed to load source image."
+                );
+            }
+        }
+    );
+
+
+targetFile
+    .addEventListener(
+        "change",
+        async () => {
+
+            const file =
+                targetFile.files[0];
+
+            if (!file)
+                return;
+
+
+            try {
+
+                targetImage =
+                    await loadFile(
+                        file
+                    );
+
+
+                targetCanvas =
+                    makeSquare(
+                        targetImage
+                    );
+
+
+                updatePreview(
+                    targetCanvas,
+                    targetPreview
+                );
+
+
+                particles = [];
+
+                reset();
+
+            } catch (error) {
+
+                console.error(
+                    error
+                );
+
+                alert(
+                    "Failed to load target image."
+                );
             }
         }
     );
 
 
 /* ============================================================
-   USE DRAWING
+   DRAWING MODE
    ============================================================ */
 
-document
-    .getElementById("useDrawing")
-    .addEventListener(
-        "click",
-        () => {
-
-            drawingSourceImageToDrawing();
-
-            drawCanvas
-                .classList
-                .remove("open");
-
-            drawTools
-                .classList
-                .remove("open");
-
-            document
-                .getElementById(
-                    "drawButton"
-                )
-                .textContent =
-                    "draw";
-
-            reset();
-        }
+const drawButton =
+    document.getElementById(
+        "drawButton"
     );
+
+const brushSize =
+    document.getElementById(
+        "brushSize"
+    );
+
+const brushSizeValue =
+    document.getElementById(
+        "brushSizeValue"
+    );
+
+const brushColor =
+    document.getElementById(
+        "brushColor"
+    );
+
+const clearDrawing =
+    document.getElementById(
+        "clearDrawing"
+    );
+
+
+brushSize.addEventListener(
+    "input",
+    () => {
+
+        brushSizeValue.textContent =
+            brushSize.value;
+
+        updateBrushCursor();
+    }
+);
+
+
+function updateBrushCursor(
+    x = null,
+    y = null
+) {
+
+    const size =
+        Number(
+            brushSize.value
+        );
+
+
+    brushCursor.style.width =
+        `${size}px`;
+
+    brushCursor.style.height =
+        `${size}px`;
+
+
+    if (
+        x !== null &&
+        y !== null
+    ) {
+
+        brushCursor.style.left =
+            `${x}px`;
+
+        brushCursor.style.top =
+            `${y}px`;
+
+        brushCursor.style.display =
+            "block";
+    }
+}
+
+
+drawButton.addEventListener(
+    "click",
+    () => {
+
+        drawingMode =
+            !drawingMode;
+
+
+        drawButton.textContent =
+            drawingMode
+                ? "drawing"
+                : "draw";
+
+
+        drawControls
+            .classList
+            .toggle(
+                "open",
+                drawingMode
+            );
+
+
+        if (!drawingMode) {
+
+            drawing =
+                false;
+
+            brushCursor.style.display =
+                "none";
+        }
+    }
+);
+
+
+/* ============================================================
+   CANVAS POINTER COORDINATES
+   ============================================================ */
+
+function getImageCoordinates(
+    clientX,
+    clientY
+) {
+
+    const {
+        size,
+        left,
+        top
+    } =
+        getDisplayGeometry();
+
+
+    const x =
+        (
+            clientX -
+            left
+        ) / size * 512;
+
+
+    const y =
+        (
+            clientY -
+            top
+        ) / size * 512;
+
+
+    return {
+        x,
+        y
+    };
+}
+
+
+/* ============================================================
+   DRAW ON SOURCE CANVAS
+   ============================================================ */
+
+function paintAt(
+    x,
+    y
+) {
+
+    if (!sourceCanvas)
+        return;
+
+
+    const radius =
+        Number(
+            brushSize.value
+        ) / 2;
+
+
+    const sourceCtx =
+        sourceCanvas.getContext(
+            "2d"
+        );
+
+
+    sourceCtx.fillStyle =
+        brushColor.value;
+
+
+    sourceCtx.beginPath();
+
+    sourceCtx.arc(
+        x,
+        y,
+        radius,
+        0,
+        Math.PI * 2
+    );
+
+    sourceCtx.fill();
+
+
+    drawingDirty =
+        true;
+
+
+    scheduleLiveRebuild();
+}
+
+
+/* ============================================================
+   SMOOTH DRAWING LINE
+   ============================================================ */
+
+function paintLine(
+    x1,
+    y1,
+    x2,
+    y2
+) {
+
+    if (!sourceCanvas)
+        return;
+
+
+    const distance =
+        Math.hypot(
+            x2 - x1,
+            y2 - y1
+        );
+
+
+    const brush =
+        Number(
+            brushSize.value
+        );
+
+
+    /*
+     * Small number of interpolation points.
+     *
+     * This prevents gaps without generating
+     * thousands of circles.
+     */
+
+    const steps =
+        Math.max(
+            1,
+            Math.ceil(
+                distance /
+                Math.max(
+                    1,
+                    brush * .45
+                )
+            )
+        );
+
+
+    const sourceCtx =
+        sourceCanvas.getContext(
+            "2d"
+        );
+
+
+    sourceCtx.fillStyle =
+        brushColor.value;
+
+
+    sourceCtx.beginPath();
+
+
+    for (
+        let i = 0;
+        i <= steps;
+        i++
+    ) {
+
+        const t =
+            i / steps;
+
+
+        const x =
+            x1 +
+            (
+                x2 - x1
+            ) * t;
+
+
+        const y =
+            y1 +
+            (
+                y2 - y1
+            ) * t;
+
+
+        sourceCtx.moveTo(
+            x + brush * .5,
+            y
+        );
+
+        sourceCtx.arc(
+            x,
+            y,
+            brush * .5,
+            0,
+            Math.PI * 2
+        );
+    }
+
+
+    sourceCtx.fill();
+
+
+    drawingDirty =
+        true;
+
+
+    scheduleLiveRebuild();
+}
+
+
+/* ============================================================
+   LIVE REBUILD
+   ============================================================
+
+   Drawing itself is immediate.
+
+   Matching is throttled to at most one rebuild per
+   animation frame, preventing the lag that happened
+   when the algorithm was executed for every pointer
+   event.
+   ============================================================ */
+
+function scheduleLiveRebuild() {
+
+    if (
+        drawingUpdateFrame
+    )
+        return;
+
+
+    drawingUpdateFrame =
+        requestAnimationFrame(
+            () => {
+
+                drawingUpdateFrame =
+                    null;
+
+
+                if (!drawingDirty)
+                    return;
+
+
+                drawingDirty =
+                    false;
+
+
+                /*
+                 * If the user is currently watching the
+                 * transformation, don't restart it.
+                 *
+                 * Instead rebuild the source particles
+                 * and continue from the current progress.
+                 */
+
+                const wasPlaying =
+                    playing;
+
+
+                const oldProgress =
+                    progress;
+
+
+                try {
+
+                    buildPixels();
+
+                    if (
+                        wasPlaying
+                    ) {
+
+                        progress =
+                            oldProgress;
+
+                        draw(progress);
+
+                    } else {
+
+                        draw();
+                    }
+
+                } catch (error) {
+
+                    console.error(
+                        error
+                    );
+                }
+            }
+        );
+}
+
+
+/* ============================================================
+   POINTER EVENTS
+   ============================================================ */
+
+canvas.addEventListener(
+    "pointerdown",
+    event => {
+
+        if (!drawingMode)
+            return;
+
+
+        event.preventDefault();
+
+
+        drawing =
+            true;
+
+
+        canvas.setPointerCapture(
+            event.pointerId
+        );
+
+
+        const point =
+            getImageCoordinates(
+                event.clientX,
+                event.clientY
+            );
+
+
+        lastDrawX =
+            point.x;
+
+        lastDrawY =
+            point.y;
+
+
+        paintAt(
+            point.x,
+            point.y
+        );
+
+
+        updateBrushCursor(
+            event.clientX,
+            event.clientY
+        );
+    }
+);
+
+
+canvas.addEventListener(
+    "pointermove",
+    event => {
+
+        if (
+            drawingMode
+        ) {
+
+            updateBrushCursor(
+                event.clientX,
+                event.clientY
+            );
+        }
+
+
+        if (
+            !drawing
+        )
+            return;
+
+
+        event.preventDefault();
+
+
+        const point =
+            getImageCoordinates(
+                event.clientX,
+                event.clientY
+            );
+
+
+        paintLine(
+            lastDrawX,
+            lastDrawY,
+            point.x,
+            point.y
+        );
+
+
+        lastDrawX =
+            point.x;
+
+        lastDrawY =
+            point.y;
+    }
+);
+
+
+canvas.addEventListener(
+    "pointerup",
+    event => {
+
+        drawing =
+            false;
+
+
+        try {
+
+            canvas.releasePointerCapture(
+                event.pointerId
+            );
+
+        } catch {}
+    }
+);
+
+
+canvas.addEventListener(
+    "pointercancel",
+    () => {
+
+        drawing =
+            false;
+    }
+);
+
+
+canvas.addEventListener(
+    "pointerleave",
+    () => {
+
+        if (!drawing)
+            brushCursor.style.display =
+                "none";
+    }
+);
+
+
+canvas.addEventListener(
+    "pointerenter",
+    event => {
+
+        if (
+            drawingMode
+        ) {
+
+            updateBrushCursor(
+                event.clientX,
+                event.clientY
+            );
+        }
+    }
+);
 
 
 /* ============================================================
    CLEAR DRAWING
    ============================================================ */
 
-document
-    .getElementById("clearDrawing")
-    .addEventListener(
-        "click",
-        () => {
-
-            setupDrawingCanvas();
-
-            particles =
-                [];
-
-            drawingDirty =
-                true;
-
-            queueRealtimeSourceUpdate();
-        }
-    );
-
-
-/* ============================================================
-   BRUSH CONTROLS
-   ============================================================ */
-
-brushSize.addEventListener(
-    "input",
+clearDrawing.addEventListener(
+    "click",
     () => {
 
-        brushValue.textContent =
-            brushSize.value;
+        sourceCanvas =
+            createDefaultSource();
+
+
+        sourceImage =
+            null;
+
+
+        updatePreview(
+            sourceCanvas,
+            sourcePreview
+        );
+
+
+        particles =
+            [];
+
+
+        progress =
+            0;
+
+
+        setProgress(0);
+
+
+        statusElement.textContent =
+            "drawing cleared";
+
+
+        draw();
     }
 );
 
@@ -2937,46 +3395,39 @@ function openCrop(mode) {
     cropMode =
         mode;
 
+
     cropImage =
         mode === "source"
-            ? sourceImage
-            : targetImage;
+            ? sourceImage || sourceCanvas
+            : targetImage || targetCanvas;
 
-    if (
-        !cropImage &&
-        mode === "source"
-    )
-        cropImage =
-            sourceCanvas;
-
-    if (
-        !cropImage &&
-        mode === "target"
-    )
-        cropImage =
-            targetCanvas;
 
     if (!cropImage)
         return;
 
+
     document
         .getElementById("cropX")
         .value =
-        50;
+            50;
+
 
     document
         .getElementById("cropY")
         .value =
-        50;
+            50;
+
 
     document
         .getElementById("cropZoom")
         .value =
-        1;
+            1;
+
 
     cropOverlay
         .classList
         .add("open");
+
 
     updateCropPreview();
 }
@@ -2987,12 +3438,14 @@ function updateCropPreview() {
     if (!cropImage)
         return;
 
+
     const x =
         Number(
             document
                 .getElementById("cropX")
                 .value
         ) / 100;
+
 
     const y =
         Number(
@@ -3001,12 +3454,14 @@ function updateCropPreview() {
                 .value
         ) / 100;
 
+
     const zoom =
         Number(
             document
                 .getElementById("cropZoom")
                 .value
         );
+
 
     const image =
         makeSquare(
@@ -3016,11 +3471,6 @@ function updateCropPreview() {
             zoom
         );
 
-    cropCanvas.width =
-        512;
-
-    cropCanvas.height =
-        512;
 
     cropCtx.clearRect(
         0,
@@ -3028,6 +3478,7 @@ function updateCropPreview() {
         512,
         512
     );
+
 
     cropCtx.drawImage(
         image,
@@ -3094,32 +3545,30 @@ document
             if (!cropImage)
                 return;
 
+
             const x =
                 Number(
                     document
-                        .getElementById(
-                            "cropX"
-                        )
+                        .getElementById("cropX")
                         .value
                 ) / 100;
+
 
             const y =
                 Number(
                     document
-                        .getElementById(
-                            "cropY"
-                        )
+                        .getElementById("cropY")
                         .value
                 ) / 100;
+
 
             const zoom =
                 Number(
                     document
-                        .getElementById(
-                            "cropZoom"
-                        )
+                        .getElementById("cropZoom")
                         .value
                 );
+
 
             const cropped =
                 makeSquare(
@@ -3129,9 +3578,9 @@ document
                     zoom
                 );
 
+
             if (
-                cropMode ===
-                "source"
+                cropMode === "source"
             ) {
 
                 sourceCanvas =
@@ -3159,12 +3608,15 @@ document
                 );
             }
 
+
             particles =
                 [];
+
 
             cropOverlay
                 .classList
                 .remove("open");
+
 
             reset();
         }
@@ -3182,9 +3634,7 @@ document
         () => {
 
             document
-                .getElementById(
-                    "advanced"
-                )
+                .getElementById("advanced")
                 .classList
                 .toggle("open");
         }
@@ -3211,18 +3661,21 @@ resolutionInput.addEventListener(
             Math.max(
                 8,
                 Math.min(
-                    160,
+                    128,
                     Number(
                         resolutionInput.value
                     ) || 64
                 )
             );
 
+
         resolutionInput.value =
             value;
 
+
         particles =
             [];
+
 
         reset();
     }
@@ -3251,8 +3704,11 @@ document
         "click",
         async () => {
 
-            if (!particles.length)
+            if (
+                !particles.length
+            )
                 buildPixels();
+
 
             if (
                 !canvas.captureStream ||
@@ -3266,13 +3722,16 @@ document
                 return;
             }
 
+
             const stream =
                 canvas.captureStream(
                     30
                 );
 
+
             let mime =
                 "video/webm";
+
 
             if (
                 MediaRecorder.isTypeSupported(
@@ -3284,17 +3743,18 @@ document
                     "video/webm;codecs=vp9";
             }
 
+
             const recorder =
                 new MediaRecorder(
                     stream,
                     {
-                        mimeType:
-                            mime
+                        mimeType: mime
                     }
                 );
 
-            const chunks =
-                [];
+
+            const chunks = [];
+
 
             recorder.ondataavailable =
                 event => {
@@ -3309,6 +3769,7 @@ document
                     }
                 };
 
+
             recorder.onstop =
                 () => {
 
@@ -3316,20 +3777,22 @@ document
                         new Blob(
                             chunks,
                             {
-                                type:
-                                    mime
+                                type: mime
                             }
                         );
+
 
                     const url =
                         URL.createObjectURL(
                             blob
                         );
 
+
                     const a =
                         document.createElement(
                             "a"
                         );
+
 
                     a.href =
                         url;
@@ -3337,13 +3800,16 @@ document
                     a.download =
                         "obamify.webm";
 
+
                     document.body.appendChild(
                         a
                     );
 
+
                     a.click();
 
                     a.remove();
+
 
                     setTimeout(
                         () =>
@@ -3354,10 +3820,13 @@ document
                     );
                 };
 
+
             recorder.start();
+
 
             const start =
                 performance.now();
+
 
             function record(time) {
 
@@ -3370,11 +3839,11 @@ document
                         ) / 5000
                     );
 
+
                 draw(p);
 
-                setProgress(
-                    p
-                );
+                setProgress(p);
+
 
                 if (
                     p < 1
@@ -3394,6 +3863,7 @@ document
                 }
             }
 
+
             requestAnimationFrame(
                 record
             );
@@ -3410,8 +3880,12 @@ async function init() {
     sourceCanvas =
         createDefaultSource();
 
-    sourcePreview.src =
-        sourceCanvas.toDataURL();
+
+    updatePreview(
+        sourceCanvas,
+        sourcePreview
+    );
+
 
     try {
 
@@ -3419,6 +3893,7 @@ async function init() {
             await loadURL(
                 "https://qikseekdev.github.io/Some-wild-shi/obama.png"
             );
+
 
         targetCanvas =
             makeSquare(
@@ -3431,11 +3906,16 @@ async function init() {
             createFallbackObama();
     }
 
-    targetPreview.src =
-        targetCanvas.toDataURL();
+
+    updatePreview(
+        targetCanvas,
+        targetPreview
+    );
+
 
     resizeCanvas();
 }
+
 
 init();
 
