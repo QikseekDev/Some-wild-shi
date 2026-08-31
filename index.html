@@ -1,0 +1,3971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<title>Obamify</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+}
+
+body {
+    background: #404040;
+    color: #eee;
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Arial,
+        sans-serif;
+}
+
+#canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    touch-action: none;
+}
+
+#controls {
+    position: fixed;
+    z-index: 20;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(760px, calc(100vw - 16px));
+    padding: 6px;
+    background: rgba(48, 48, 48, .96);
+    border: 1px solid rgba(255, 255, 255, .12);
+    border-radius: 4px;
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, .45),
+        0 8px 24px rgba(0, 0, 0, .2);
+    font-size: 13px;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 30px;
+}
+
+.row + .row {
+    margin-top: 5px;
+}
+
+button,
+select,
+input {
+    font: inherit;
+}
+
+button,
+select {
+    color: #eee;
+    background: #555;
+    border: 1px solid #707070;
+    border-radius: 3px;
+}
+
+button {
+    min-height: 27px;
+    padding: 3px 9px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #626262;
+}
+
+button:active {
+    background: #444;
+}
+
+button:disabled {
+    opacity: .5;
+    cursor: default;
+}
+
+select {
+    min-height: 27px;
+    padding: 2px 7px;
+}
+
+input[type="number"] {
+    width: 65px;
+    min-height: 27px;
+    padding: 3px 6px;
+    color: white;
+    background: #444;
+    border: 1px solid #707070;
+    border-radius: 3px;
+}
+
+input[type="range"] {
+    width: 130px;
+    accent-color: #aaa;
+}
+
+.spacer {
+    flex: 1;
+}
+
+.label {
+    color: #ccc;
+    white-space: nowrap;
+}
+
+.value {
+    width: 38px;
+    text-align: right;
+    color: #aaa;
+    font-variant-numeric: tabular-nums;
+}
+
+.image-button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.image-button img {
+    width: 27px;
+    height: 27px;
+    object-fit: cover;
+    border-radius: 2px;
+    background: #222;
+}
+
+#advanced {
+    display: none;
+    margin-top: 5px;
+    padding-top: 5px;
+    border-top: 1px solid rgba(255,255,255,.08);
+}
+
+#advanced.open {
+    display: block;
+}
+
+#drawControls {
+    display: none;
+    margin-top: 5px;
+    padding-top: 5px;
+    border-top: 1px solid rgba(255,255,255,.08);
+}
+
+#drawControls.open {
+    display: block;
+}
+
+.color-button {
+    width: 25px;
+    height: 25px;
+    min-height: 25px;
+    padding: 0;
+    border-radius: 50%;
+    border: 2px solid #777;
+}
+
+.color-button.selected {
+    border-color: white;
+    box-shadow: 0 0 0 1px #222;
+}
+
+#drawBlack { background: #000; }
+#drawCyan { background: #86d9e3; }
+#drawBrown { background: #383232; }
+#drawSkin { background: #d49976; }
+#drawRed { background: #793025; }
+
+#cropOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,.75);
+}
+
+#cropOverlay.open {
+    display: flex;
+}
+
+#cropBox {
+    width: min(700px, calc(100vw - 24px));
+    padding: 12px;
+    background: #3e3e3e;
+    border: 1px solid #777;
+    border-radius: 5px;
+    box-shadow: 0 10px 50px rgba(0,0,0,.6);
+}
+
+#cropTitle {
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+#cropPreview {
+    width: 100%;
+    height: min(55vh, 500px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #222;
+    overflow: hidden;
+}
+
+#cropCanvas {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.crop-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 9px;
+}
+
+.crop-row span {
+    width: 80px;
+}
+
+.crop-row input {
+    flex: 1;
+}
+
+.crop-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+#links {
+    position: fixed;
+    z-index: 20;
+    left: 18px;
+    bottom: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.link {
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: transform .15s;
+}
+
+.link:hover {
+    transform: scale(1.08);
+}
+
+.link svg {
+    width: 29px;
+    height: 29px;
+    fill: white;
+}
+
+#drawHint {
+    position: fixed;
+    z-index: 15;
+    left: 50%;
+    bottom: 20px;
+    transform: translateX(-50%);
+    display: none;
+    padding: 7px 12px;
+    background: rgba(0,0,0,.7);
+    border-radius: 4px;
+    font-size: 12px;
+    pointer-events: none;
+}
+
+body.drawing #drawHint {
+    display: block;
+}
+
+@media (max-width: 600px) {
+    #controls {
+        top: 4px;
+        width: calc(100vw - 8px);
+        font-size: 12px;
+    }
+
+    .row {
+        flex-wrap: wrap;
+    }
+
+    input[type="range"] {
+        width: 105px;
+    }
+
+    #links {
+        left: 12px;
+        bottom: 12px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="canvas"></canvas>
+
+<div id="controls">
+
+    <div class="row">
+
+        <button id="sourceButton" class="image-button">
+            <img id="sourcePreview">
+            <span>source</span>
+        </button>
+
+        <button id="targetButton" class="image-button">
+            <img id="targetPreview">
+            <span>target</span>
+        </button>
+
+        <button id="sourceCrop">crop</button>
+        <button id="targetCrop">crop</button>
+
+        <div class="spacer"></div>
+
+        <button id="play">▶</button>
+        <button id="reset">reset</button>
+
+    </div>
+
+    <div class="row">
+
+        <button id="generate">generate</button>
+        <button id="advancedButton">advanced</button>
+        <button id="drawingButton">✏ draw</button>
+
+        <div class="spacer"></div>
+
+        <button id="save">save</button>
+
+    </div>
+
+    <div id="advanced">
+
+        <div class="row">
+
+            <span class="label">resolution</span>
+
+            <input
+                id="resolution"
+                type="number"
+                min="8"
+                max="160"
+                step="1"
+                value="64"
+            >
+
+        </div>
+
+        <div class="row">
+
+            <span class="label">proximity importance</span>
+
+            <input
+                id="proximity"
+                type="range"
+                min="0"
+                max="50"
+                step="1"
+                value="13"
+            >
+
+            <span id="proximityValue" class="value">13</span>
+
+        </div>
+
+        <div class="row">
+
+            <span class="label">algorithm</span>
+
+            <select id="algorithm">
+
+                <option value="fast">
+                    Fast
+                </option>
+
+                <option value="optimal">
+                    Optimal
+                </option>
+
+            </select>
+
+        </div>
+
+    </div>
+
+    <div id="drawControls">
+
+        <div class="row">
+
+            <span class="label">color</span>
+
+            <button class="color-button selected" id="drawBlack"></button>
+            <button class="color-button" id="drawCyan"></button>
+            <button class="color-button" id="drawBrown"></button>
+            <button class="color-button" id="drawSkin"></button>
+            <button class="color-button" id="drawRed"></button>
+
+            <span class="spacer"></span>
+
+            <button id="exitDrawing">✕ exit</button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div id="drawHint">
+    Draw anywhere — the pixels continuously rearrange toward the target.
+</div>
+
+<div id="cropOverlay">
+
+    <div id="cropBox">
+
+        <div id="cropTitle">crop image</div>
+
+        <div id="cropPreview">
+
+            <canvas
+                id="cropCanvas"
+                width="512"
+                height="512"
+            ></canvas>
+
+        </div>
+
+        <div class="crop-row">
+
+            <span>horizontal</span>
+
+            <input
+                id="cropX"
+                type="range"
+                min="0"
+                max="100"
+                value="50"
+            >
+
+        </div>
+
+        <div class="crop-row">
+
+            <span>vertical</span>
+
+            <input
+                id="cropY"
+                type="range"
+                min="0"
+                max="100"
+                value="50"
+            >
+
+        </div>
+
+        <div class="crop-row">
+
+            <span>zoom</span>
+
+            <input
+                id="cropZoom"
+                type="range"
+                min="1"
+                max="3"
+                step=".01"
+                value="1"
+            >
+
+        </div>
+
+        <div class="crop-actions">
+
+            <button id="cropCancel">cancel</button>
+            <button id="cropApply">apply</button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div id="links">
+
+    <a
+        class="link"
+        href="https://github.com/Spu7Nix/obamify"
+        target="_blank"
+        rel="noopener noreferrer"
+        title="source code"
+    >
+        <svg viewBox="0 0 24 24">
+            <path d="
+                M12 .5
+                C5.65 .5 .5 5.65 .5 12
+                c0 5.08 3.29 9.39 7.86 10.91
+                .58 .1 .79-.25 .79-.56
+                v-2.17
+                c-3.2 .7-3.87-1.54-3.87-1.54
+                -.53-1.36-1.31-1.72-1.31-1.72
+                -1.07-.73 .08-.72 .08-.72
+                1.18 .08 1.8 1.21 1.8 1.21
+                1.05 1.79 2.76 1.27 3.43 .97
+                .11-.76 .41-1.27 .75-1.56
+                -2.55-.29-5.23-1.28-5.23-5.69
+                0-1.26 .45-2.28 1.2-3.08
+                -.12-.29-.52-1.46 .11-3.04
+                0 0 .98-.31 3.2 1.18
+                a11.1 11.1 0 0 1 5.82 0
+                c2.22-1.49 3.2-1.18 3.2-1.18
+                .63 1.58 .23 2.75 .11 3.04
+                .75 .8 1.2 1.82 1.2 3.08
+                0 4.42-2.69 5.4-5.25 5.68
+                .41 .35 .79 1.04 .79 2.1
+                v3.11
+                c0 .31 .21 .67 .8 .56
+                A11.51 11.51 0 0 0 23.5 12
+                C23.5 5.65 18.35 .5 12 .5z
+            " />
+        </svg>
+    </a>
+
+    <a
+        class="link"
+        href="https://spu7nix.net"
+        target="_blank"
+        rel="noopener noreferrer"
+        title="author"
+    >
+        <span style="
+            color:white;
+            font-size:24px;
+            font-weight:700;
+        ">S</span>
+    </a>
+
+</div>
+
+<input id="sourceFile" type="file" accept="image/*" hidden>
+<input id="targetFile" type="file" accept="image/*" hidden>
+
+<script>
+"use strict";
+
+/* ============================================================
+   ELEMENTS
+   ============================================================ */
+
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d", {
+    alpha: false
+});
+
+const sourceFile = document.getElementById("sourceFile");
+const targetFile = document.getElementById("targetFile");
+
+const sourcePreview = document.getElementById("sourcePreview");
+const targetPreview = document.getElementById("targetPreview");
+
+const resolutionInput = document.getElementById("resolution");
+const proximityInput = document.getElementById("proximity");
+const proximityValue = document.getElementById("proximityValue");
+const algorithmInput = document.getElementById("algorithm");
+
+const drawControls = document.getElementById("drawControls");
+const drawingButton = document.getElementById("drawingButton");
+const exitDrawing = document.getElementById("exitDrawing");
+
+
+/* ============================================================
+   STATE
+   ============================================================ */
+
+let sourceImage = null;
+let targetImage = null;
+
+let sourceCanvas = null;
+let targetCanvas = null;
+
+let particles = [];
+
+let playing = false;
+let progress = 0;
+let animationStart = 0;
+let animationFrame = null;
+
+let cropMode = null;
+let cropImage = null;
+
+let drawingMode = false;
+let drawingColor = {
+    r: 0,
+    g: 0,
+    b: 0
+};
+
+let drawingPointer = false;
+let lastDrawPoint = null;
+
+let drawingRAF = null;
+let drawingDirty = false;
+
+let drawIteration = 0;
+
+
+/* ============================================================
+   DEFAULT SOURCE
+   ============================================================ */
+
+function createDefaultSource() {
+
+    const c = document.createElement("canvas");
+
+    c.width = 512;
+    c.height = 512;
+
+    const x = c.getContext("2d");
+
+    const gradient = x.createLinearGradient(
+        0,
+        0,
+        512,
+        512
+    );
+
+    gradient.addColorStop(0, "#888");
+    gradient.addColorStop(1, "#222");
+
+    x.fillStyle = gradient;
+
+    x.fillRect(
+        0,
+        0,
+        512,
+        512
+    );
+
+    return c;
+}
+
+
+/* ============================================================
+   FALLBACK TARGET
+   ============================================================ */
+
+function createFallbackObama() {
+
+    const c = document.createElement("canvas");
+
+    c.width = 512;
+    c.height = 512;
+
+    const x = c.getContext("2d");
+
+    x.fillStyle = "#27354b";
+    x.fillRect(0, 0, 512, 512);
+
+    x.fillStyle = "#c9946b";
+
+    x.beginPath();
+
+    x.ellipse(
+        256,
+        240,
+        105,
+        130,
+        0,
+        0,
+        Math.PI * 2
+    );
+
+    x.fill();
+
+    x.fillStyle = "#17120f";
+
+    x.beginPath();
+
+    x.ellipse(
+        256,
+        145,
+        108,
+        65,
+        Math.PI,
+        0,
+        Math.PI * 2
+    );
+
+    x.fill();
+
+    x.fillStyle = "#111";
+
+    x.beginPath();
+
+    x.ellipse(
+        215,
+        240,
+        13,
+        8,
+        0,
+        0,
+        Math.PI * 2
+    );
+
+    x.ellipse(
+        297,
+        240,
+        13,
+        8,
+        0,
+        0,
+        Math.PI * 2
+    );
+
+    x.fill();
+
+    x.strokeStyle = "#633c2c";
+    x.lineWidth = 5;
+
+    x.beginPath();
+
+    x.arc(
+        256,
+        275,
+        43,
+        .2,
+        Math.PI - .2
+    );
+
+    x.stroke();
+
+    x.fillStyle = "#111";
+
+    x.beginPath();
+
+    x.moveTo(150, 355);
+    x.lineTo(362, 355);
+    x.lineTo(430, 512);
+    x.lineTo(82, 512);
+    x.closePath();
+
+    x.fill();
+
+    return c;
+}
+
+
+/* ============================================================
+   IMAGE LOADING
+   ============================================================ */
+
+function loadFile(file) {
+
+    return new Promise((resolve, reject) => {
+
+        if (
+            !file ||
+            !file.type ||
+            !file.type.startsWith("image/")
+        ) {
+            reject(new Error("Invalid image"));
+            return;
+        }
+
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+
+        img.onload = () => {
+            URL.revokeObjectURL(url);
+            resolve(img);
+        };
+
+        img.onerror = () => {
+            URL.revokeObjectURL(url);
+            reject(new Error("Could not load image"));
+        };
+
+        img.src = url;
+    });
+}
+
+
+function loadURL(url) {
+
+    return new Promise((resolve, reject) => {
+
+        const img = new Image();
+
+        img.crossOrigin = "anonymous";
+
+        img.onload = () => resolve(img);
+
+        img.onerror = () =>
+            reject(
+                new Error("Could not load image")
+            );
+
+        img.src = url;
+    });
+}
+
+
+/* ============================================================
+   SQUARE CROP
+   ============================================================ */
+
+function makeSquare(
+    img,
+    offsetX = .5,
+    offsetY = .5,
+    zoom = 1
+) {
+
+    const width =
+        img.naturalWidth ||
+        img.width;
+
+    const height =
+        img.naturalHeight ||
+        img.height;
+
+    const side =
+        Math.min(width, height);
+
+    const visible =
+        side / zoom;
+
+    const maxX =
+        Math.max(0, width - visible);
+
+    const maxY =
+        Math.max(0, height - visible);
+
+    const sx =
+        maxX * offsetX;
+
+    const sy =
+        maxY * offsetY;
+
+    const c =
+        document.createElement("canvas");
+
+    c.width = 512;
+    c.height = 512;
+
+    const x =
+        c.getContext("2d");
+
+    x.imageSmoothingEnabled = true;
+
+    x.drawImage(
+        img,
+        sx,
+        sy,
+        visible,
+        visible,
+        0,
+        0,
+        512,
+        512
+    );
+
+    return c;
+}
+
+
+/* ============================================================
+   PREVIEW
+   ============================================================ */
+
+function updatePreview(
+    canvasElement,
+    previewElement
+) {
+
+    previewElement.src =
+        canvasElement.toDataURL(
+            "image/jpeg",
+            .85
+        );
+}
+
+
+/* ============================================================
+   RESIZE
+   ============================================================ */
+
+function resizeCanvas() {
+
+    const dpr =
+        Math.min(
+            window.devicePixelRatio || 1,
+            2
+        );
+
+    canvas.width =
+        Math.max(
+            1,
+            Math.round(innerWidth * dpr)
+        );
+
+    canvas.height =
+        Math.max(
+            1,
+            Math.round(innerHeight * dpr)
+        );
+
+    canvas.style.width =
+        innerWidth + "px";
+
+    canvas.style.height =
+        innerHeight + "px";
+
+    ctx.setTransform(
+        dpr,
+        0,
+        0,
+        dpr,
+        0,
+        0
+    );
+
+    draw();
+}
+
+window.addEventListener(
+    "resize",
+    resizeCanvas,
+    {
+        passive: true
+    }
+);
+
+
+/* ============================================================
+   PIXEL / ALGORITHM HELPERS
+   ============================================================ */
+
+/*
+ * This is intentionally based on Obamify's actual heuristic:
+ *
+ *   color error * target weight
+ *   +
+ *   spatial error
+ *
+ * with the spatial term squared.
+ *
+ * The important part is that RGB belongs to the SOURCE pixel.
+ * It is never replaced with the target RGB.
+ */
+
+function heuristic(
+    sourceX,
+    sourceY,
+    targetX,
+    targetY,
+    sourceColor,
+    targetColor,
+    colorWeight,
+    spatialWeight
+) {
+
+    const dx =
+        sourceX - targetX;
+
+    const dy =
+        sourceY - targetY;
+
+    const spatial =
+        dx * dx +
+        dy * dy;
+
+    const dr =
+        sourceColor.r -
+        targetColor.r;
+
+    const dg =
+        sourceColor.g -
+        targetColor.g;
+
+    const db =
+        sourceColor.b -
+        targetColor.b;
+
+    const color =
+        dr * dr +
+        dg * dg +
+        db * db;
+
+    /*
+     * Same structure as the Rust implementation:
+     *
+     * color * weight + (spatial * proximity)^2
+     */
+
+    return (
+        color * colorWeight +
+        Math.pow(
+            spatial * spatialWeight,
+            2
+        )
+    );
+}
+
+
+function targetWeight(r, g, b) {
+
+    /*
+     * The original application uses a special
+     * target-weight image. For a standalone HTML
+     * version we derive a very similar importance
+     * value from target luminance.
+     *
+     * High-information / dark facial areas receive
+     * more importance.
+     */
+
+    const luminance =
+        (
+            0.299 * r +
+            0.587 * g +
+            0.114 * b
+        );
+
+    const contrast =
+        Math.abs(
+            luminance - 128
+        );
+
+    return Math.max(
+        1,
+        Math.round(
+            40 +
+            contrast * 1.7
+        )
+    );
+}
+
+
+function getResolution() {
+
+    let resolution =
+        Number(
+            resolutionInput.value
+        );
+
+    if (!Number.isFinite(resolution))
+        resolution = 64;
+
+    resolution =
+        Math.floor(
+            Math.max(
+                8,
+                Math.min(
+                    160,
+                    resolution
+                )
+            )
+        );
+
+    resolutionInput.value =
+        resolution;
+
+    return resolution;
+}
+
+
+/* ============================================================
+   BUILD PIXEL ARRAYS
+   ============================================================ */
+
+function getPixelGrid(source, target, resolution) {
+
+    const sourceData =
+        source
+            .getContext("2d")
+            .getImageData(
+                0,
+                0,
+                512,
+                512
+            ).data;
+
+    const targetData =
+        target
+            .getContext("2d")
+            .getImageData(
+                0,
+                0,
+                512,
+                512
+            ).data;
+
+    const step =
+        512 / resolution;
+
+    const sourcePixels = [];
+    const targetPixels = [];
+
+    for (
+        let y = 0;
+        y < resolution;
+        y++
+    ) {
+
+        for (
+            let x = 0;
+            x < resolution;
+            x++
+        ) {
+
+            const px =
+                Math.min(
+                    511,
+                    Math.floor(
+                        (x + .5) * step
+                    )
+                );
+
+            const py =
+                Math.min(
+                    511,
+                    Math.floor(
+                        (y + .5) * step
+                    )
+                );
+
+            const index =
+                (
+                    py * 512 +
+                    px
+                ) * 4;
+
+            const sr =
+                sourceData[index];
+
+            const sg =
+                sourceData[index + 1];
+
+            const sb =
+                sourceData[index + 2];
+
+            const tr =
+                targetData[index];
+
+            const tg =
+                targetData[index + 1];
+
+            const tb =
+                targetData[index + 2];
+
+            sourcePixels.push({
+                x,
+                y,
+                r: sr,
+                g: sg,
+                b: sb
+            });
+
+            targetPixels.push({
+                x,
+                y,
+                r: tr,
+                g: tg,
+                b: tb,
+                weight:
+                    targetWeight(
+                        tr,
+                        tg,
+                        tb
+                    )
+            });
+        }
+    }
+
+    return {
+        sourcePixels,
+        targetPixels
+    };
+}
+
+
+/* ============================================================
+   FAST / GENETIC ALGORITHM
+   ============================================================ */
+
+/*
+ * This follows the structure of Obamify's fast algorithm:
+ *
+ * - every array slot represents a target position
+ * - each slot contains a SOURCE pixel
+ * - random nearby swaps are tested
+ * - the swap is accepted only when the total
+ *   heuristic improves
+ * - search radius gradually shrinks
+ *
+ * Crucially, pixels are SWAPPED, not recolored.
+ */
+
+function createGeneticState(
+    sourcePixels,
+    targetPixels,
+    resolution
+) {
+
+    const pixels =
+        sourcePixels.map(
+            (p, i) => {
+
+                const target =
+                    targetPixels[i];
+
+                return {
+                    srcX: p.x,
+                    srcY: p.y,
+                    r: p.r,
+                    g: p.g,
+                    b: p.b,
+
+                    h:
+                        heuristic(
+                            p.x,
+                            p.y,
+                            target.x,
+                            target.y,
+                            p,
+                            target,
+                            target.weight,
+                            Number(
+                                proximityInput.value
+                            ) || 13
+                        )
+                };
+            }
+        );
+
+    return {
+        pixels,
+        resolution,
+        maxDist: resolution,
+        swapsMade: 0
+    };
+}
+
+
+function geneticStep(
+    state,
+    targetPixels,
+    iterations
+) {
+
+    const {
+        pixels,
+        resolution
+    } = state;
+
+    const proximity =
+        Number(
+            proximityInput.value
+        ) || 0;
+
+    let swapsMade = 0;
+
+    for (
+        let iteration = 0;
+        iteration < iterations;
+        iteration++
+    ) {
+
+        const a =
+            Math.floor(
+                Math.random() *
+                pixels.length
+            );
+
+        const ax =
+            a % resolution;
+
+        const ay =
+            Math.floor(
+                a / resolution
+            );
+
+        const radius =
+            Math.max(
+                2,
+                Math.floor(
+                    state.maxDist
+                )
+            );
+
+        const bx =
+            Math.max(
+                0,
+                Math.min(
+                    resolution - 1,
+                    ax +
+                    randomInt(
+                        -radius,
+                        radius
+                    )
+                )
+            );
+
+        const by =
+            Math.max(
+                0,
+                Math.min(
+                    resolution - 1,
+                    ay +
+                    randomInt(
+                        -radius,
+                        radius
+                    )
+                )
+            );
+
+        const b =
+            by * resolution +
+            bx;
+
+        if (a === b)
+            continue;
+
+        const pa =
+            pixels[a];
+
+        const pb =
+            pixels[b];
+
+        const ta =
+            targetPixels[a];
+
+        const tb =
+            targetPixels[b];
+
+        /*
+         * What would pixel A cost at B?
+         */
+
+        const aOnB =
+            heuristic(
+                pa.srcX,
+                pa.srcY,
+                tb.x,
+                tb.y,
+                pa,
+                tb,
+                tb.weight,
+                proximity
+            );
+
+        /*
+         * What would pixel B cost at A?
+         */
+
+        const bOnA =
+            heuristic(
+                pb.srcX,
+                pb.srcY,
+                ta.x,
+                ta.y,
+                pb,
+                ta,
+                ta.weight,
+                proximity
+            );
+
+        const improvementA =
+            pa.h -
+            bOnA;
+
+        const improvementB =
+            pb.h -
+            aOnB;
+
+        /*
+         * Exact same acceptance idea as the
+         * original fast/genetic algorithm.
+         */
+
+        if (
+            improvementA +
+            improvementB >
+            0
+        ) {
+
+            pixels[a] =
+                pb;
+
+            pixels[b] =
+                pa;
+
+            pixels[a].h =
+                bOnA;
+
+            pixels[b].h =
+                aOnB;
+
+            swapsMade++;
+        }
+    }
+
+    state.swapsMade =
+        swapsMade;
+
+    /*
+     * The original algorithm gradually changes:
+     *
+     * max_dist = max(max_dist * .99, 2)
+     */
+
+    state.maxDist =
+        Math.max(
+            2,
+            state.maxDist * .99
+        );
+
+    return swapsMade;
+}
+
+
+function randomInt(min, max) {
+
+    return Math.floor(
+        Math.random() *
+        (max - min + 1)
+    ) + min;
+}
+
+
+/* ============================================================
+   OPTIMAL ALGORITHM
+   ============================================================ */
+
+/*
+ * Hungarian/Kuhn-Munkres assignment.
+ *
+ * This is intentionally only used at manageable resolutions.
+ * The real Obamify optimal algorithm is also an assignment
+ * problem over the complete source/target matrix.
+ */
+
+function optimalAssignment(
+    sourcePixels,
+    targetPixels,
+    resolution
+) {
+
+    const n =
+        sourcePixels.length;
+
+    /*
+     * Avoid freezing a phone with an enormous O(n^3)
+     * matrix.
+     */
+
+    if (n > 4096) {
+
+        console.warn(
+            "Optimal resolution too high; using fast algorithm."
+        );
+
+        return geneticAssignment(
+            sourcePixels,
+            targetPixels,
+            resolution
+        );
+    }
+
+    const proximity =
+        Number(
+            proximityInput.value
+        ) || 0;
+
+    /*
+     * Hungarian algorithm for MINIMUM cost.
+     *
+     * u/v/p/way are the standard rectangular
+     * Hungarian implementation.
+     */
+
+    const u =
+        new Float64Array(n + 1);
+
+    const v =
+        new Float64Array(n + 1);
+
+    const p =
+        new Int32Array(n + 1);
+
+    const way =
+        new Int32Array(n + 1);
+
+    for (
+        let i = 1;
+        i <= n;
+        i++
+    ) {
+
+        p[0] = i;
+
+        let j0 = 0;
+
+        const minv =
+            new Float64Array(n + 1);
+
+        minv.fill(Infinity);
+
+        const used =
+            new Uint8Array(n + 1);
+
+        do {
+
+            used[j0] = 1;
+
+            const i0 =
+                p[j0];
+
+            let delta =
+                Infinity;
+
+            let j1 =
+                0;
+
+            const source =
+                sourcePixels[
+                    i0 - 1
+                ];
+
+            for (
+                let j = 1;
+                j <= n;
+                j++
+            ) {
+
+                if (used[j])
+                    continue;
+
+                const target =
+                    targetPixels[
+                        j - 1
+                    ];
+
+                const cur =
+                    heuristic(
+                        source.x,
+                        source.y,
+                        target.x,
+                        target.y,
+                        source,
+                        target,
+                        target.weight,
+                        proximity
+                    ) -
+                    u[i0] -
+                    v[j];
+
+                if (
+                    cur <
+                    minv[j]
+                ) {
+
+                    minv[j] =
+                        cur;
+
+                    way[j] =
+                        j0;
+                }
+
+                if (
+                    minv[j] <
+                    delta
+                ) {
+
+                    delta =
+                        minv[j];
+
+                    j1 =
+                        j;
+                }
+            }
+
+            for (
+                let j = 0;
+                j <= n;
+                j++
+            ) {
+
+                if (used[j]) {
+
+                    u[p[j]] +=
+                        delta;
+
+                    v[j] -=
+                        delta;
+
+                } else {
+
+                    minv[j] -=
+                        delta;
+                }
+            }
+
+            j0 = j1;
+
+        } while (
+            p[j0] !== 0
+        );
+
+        do {
+
+            const j1 =
+                way[j0];
+
+            p[j0] =
+                p[j1];
+
+            j0 =
+                j1;
+
+        } while (
+            j0 !== 0
+        );
+    }
+
+    /*
+     * p[target + 1] = source + 1
+     */
+
+    const assignment =
+        new Array(n);
+
+    for (
+        let j = 1;
+        j <= n;
+        j++
+    ) {
+
+        assignment[j - 1] =
+            p[j] - 1;
+    }
+
+    return assignment;
+}
+
+
+function geneticAssignment(
+    sourcePixels,
+    targetPixels,
+    resolution
+) {
+
+    const state =
+        createGeneticState(
+            sourcePixels,
+            targetPixels,
+            resolution
+        );
+
+    /*
+     * Give the fast algorithm a substantial initial
+     * optimization pass.
+     */
+
+    const total =
+        sourcePixels.length;
+
+    const iterations =
+        Math.min(
+            total * 128,
+            1200000
+        );
+
+    geneticStep(
+        state,
+        targetPixels,
+        iterations
+    );
+
+    return state.pixels.map(
+        p =>
+            p.srcY *
+            resolution +
+            p.srcX
+    );
+}
+
+
+/* ============================================================
+   BUILD TRANSFORMATION
+   ============================================================ */
+
+function buildPixels() {
+
+    if (!sourceCanvas)
+        return;
+
+    if (!targetCanvas)
+        return;
+
+    const resolution =
+        getResolution();
+
+    const {
+        sourcePixels,
+        targetPixels
+    } =
+        getPixelGrid(
+            sourceCanvas,
+            targetCanvas,
+            resolution
+        );
+
+    let assignment;
+
+    if (
+        algorithmInput.value ===
+        "optimal"
+    ) {
+
+        assignment =
+            optimalAssignment(
+                sourcePixels,
+                targetPixels,
+                resolution
+            );
+
+    } else {
+
+        assignment =
+            geneticAssignment(
+                sourcePixels,
+                targetPixels,
+                resolution
+            );
+    }
+
+    particles =
+        assignment.map(
+            (
+                sourceIndex,
+                targetIndex
+            ) => {
+
+                const source =
+                    sourcePixels[
+                        sourceIndex
+                    ];
+
+                const target =
+                    targetPixels[
+                        targetIndex
+                    ];
+
+                return {
+
+                    ox:
+                        source.x + .5,
+
+                    oy:
+                        source.y + .5,
+
+                    tx:
+                        target.x + .5,
+
+                    ty:
+                        target.y + .5,
+
+                    /*
+                     * SOURCE COLOR IS STORED HERE
+                     * AND NEVER REPLACED BY TARGET COLOR.
+                     */
+
+                    r:
+                        source.r,
+
+                    g:
+                        source.g,
+
+                    b:
+                        source.b,
+
+                    /*
+                     * Drawing-mode state.
+                     */
+
+                    age: 0,
+                    strokeId: 0
+                };
+            }
+        );
+}
+
+
+/* ============================================================
+   EASING
+   ============================================================ */
+
+function ease(t) {
+
+    return t < .5
+        ? 4 * t * t * t
+        : 1 -
+          Math.pow(
+              -2 * t + 2,
+              3
+          ) / 2;
+}
+
+
+/* ============================================================
+   DRAW
+   ============================================================ */
+
+function draw(
+    animationProgress = progress
+) {
+
+    const width =
+        innerWidth;
+
+    const height =
+        innerHeight;
+
+    ctx.fillStyle =
+        "#404040";
+
+    ctx.fillRect(
+        0,
+        0,
+        width,
+        height
+    );
+
+    if (!sourceCanvas)
+        return;
+
+    const size =
+        Math.min(
+            width,
+            height
+        ) * .86;
+
+    const left =
+        (width - size) / 2;
+
+    const top =
+        (height - size) / 2;
+
+    if (!particles.length) {
+
+        ctx.imageSmoothingEnabled =
+            true;
+
+        ctx.drawImage(
+            sourceCanvas,
+            left,
+            top,
+            size,
+            size
+        );
+
+        return;
+    }
+
+    const resolution =
+        getResolution();
+
+    const cell =
+        size /
+        resolution;
+
+    const e =
+        ease(
+            Math.max(
+                0,
+                Math.min(
+                    1,
+                    animationProgress
+                )
+            )
+        );
+
+    /*
+     * Every rendered cell uses its ORIGINAL SOURCE
+     * color. Only its position changes.
+     */
+
+    for (
+        const particle
+        of particles
+    ) {
+
+        const x =
+            particle.ox +
+            (
+                particle.tx -
+                particle.ox
+            ) * e;
+
+        const y =
+            particle.oy +
+            (
+                particle.ty -
+                particle.oy
+            ) * e;
+
+        ctx.fillStyle =
+            `rgb(
+                ${particle.r},
+                ${particle.g},
+                ${particle.b}
+            )`;
+
+        ctx.fillRect(
+            left +
+            x * cell -
+            .25,
+
+            top +
+            y * cell -
+            .25,
+
+            cell + .5,
+            cell + .5
+        );
+    }
+}
+
+
+/* ============================================================
+   ANIMATION
+   ============================================================ */
+
+function animationLoop(time) {
+
+    if (!playing)
+        return;
+
+    const duration =
+        5000;
+
+    progress =
+        Math.min(
+            1,
+            (
+                time -
+                animationStart
+            ) /
+            duration
+        );
+
+    draw(progress);
+
+    if (
+        progress >= 1
+    ) {
+
+        playing =
+            false;
+
+        document
+            .getElementById("play")
+            .textContent =
+                "▶";
+
+        animationFrame =
+            null;
+
+        return;
+    }
+
+    animationFrame =
+        requestAnimationFrame(
+            animationLoop
+        );
+}
+
+
+function startAnimation() {
+
+    if (drawingMode)
+        return;
+
+    if (!particles.length)
+        buildPixels();
+
+    if (animationFrame)
+        cancelAnimationFrame(
+            animationFrame
+        );
+
+    progress = 0;
+    playing = true;
+
+    animationStart =
+        performance.now();
+
+    document
+        .getElementById("play")
+        .textContent =
+            "Ⅱ";
+
+    animationFrame =
+        requestAnimationFrame(
+            animationLoop
+        );
+}
+
+
+function reset() {
+
+    playing = false;
+
+    if (animationFrame)
+        cancelAnimationFrame(
+            animationFrame
+        );
+
+    animationFrame = null;
+    progress = 0;
+
+    document
+        .getElementById("play")
+        .textContent =
+            "▶";
+
+    draw();
+}
+
+
+/* ============================================================
+   GENERATE
+   ============================================================ */
+
+document
+    .getElementById("generate")
+    .addEventListener(
+        "click",
+        async () => {
+
+            if (drawingMode)
+                return;
+
+            const button =
+                document.getElementById(
+                    "generate"
+                );
+
+            button.disabled = true;
+
+            await new Promise(
+                resolve =>
+                    setTimeout(
+                        resolve,
+                        20
+                    )
+            );
+
+            try {
+
+                buildPixels();
+
+                startAnimation();
+
+            } catch (error) {
+
+                console.error(error);
+
+                alert(
+                    "Failed to generate."
+                );
+
+            } finally {
+
+                button.disabled = false;
+            }
+        }
+    );
+
+
+/* ============================================================
+   PLAY / PAUSE
+   ============================================================ */
+
+document
+    .getElementById("play")
+    .addEventListener(
+        "click",
+        () => {
+
+            if (drawingMode)
+                return;
+
+            if (playing) {
+
+                playing = false;
+
+                if (animationFrame)
+                    cancelAnimationFrame(
+                        animationFrame
+                    );
+
+                animationFrame = null;
+
+                document
+                    .getElementById("play")
+                    .textContent =
+                        "▶";
+
+            } else {
+
+                startAnimation();
+            }
+        }
+    );
+
+
+/* ============================================================
+   RESET
+   ============================================================ */
+
+document
+    .getElementById("reset")
+    .addEventListener(
+        "click",
+        () => {
+
+            if (drawingMode) {
+
+                resetDrawingCanvas();
+
+                return;
+            }
+
+            reset();
+        }
+    );
+
+
+/* ============================================================
+   SOURCE / TARGET
+   ============================================================ */
+
+document
+    .getElementById("sourceButton")
+    .addEventListener(
+        "click",
+        () =>
+            sourceFile.click()
+    );
+
+
+document
+    .getElementById("targetButton")
+    .addEventListener(
+        "click",
+        () =>
+            targetFile.click()
+    );
+
+
+sourceFile
+    .addEventListener(
+        "change",
+        async () => {
+
+            const file =
+                sourceFile.files[0];
+
+            if (!file)
+                return;
+
+            try {
+
+                sourceImage =
+                    await loadFile(file);
+
+                sourceCanvas =
+                    makeSquare(
+                        sourceImage
+                    );
+
+                updatePreview(
+                    sourceCanvas,
+                    sourcePreview
+                );
+
+                particles = [];
+
+                reset();
+
+            } catch (error) {
+
+                console.error(error);
+
+                alert(
+                    "Failed to load source image."
+                );
+            }
+        }
+    );
+
+
+targetFile
+    .addEventListener(
+        "change",
+        async () => {
+
+            const file =
+                targetFile.files[0];
+
+            if (!file)
+                return;
+
+            try {
+
+                targetImage =
+                    await loadFile(file);
+
+                targetCanvas =
+                    makeSquare(
+                        targetImage
+                    );
+
+                updatePreview(
+                    targetCanvas,
+                    targetPreview
+                );
+
+                particles = [];
+
+                reset();
+
+            } catch (error) {
+
+                console.error(error);
+
+                alert(
+                    "Failed to load target image."
+                );
+            }
+        }
+    );
+
+
+/* ============================================================
+   CROP
+   ============================================================ */
+
+const cropOverlay =
+    document.getElementById(
+        "cropOverlay"
+    );
+
+const cropCanvas =
+    document.getElementById(
+        "cropCanvas"
+    );
+
+const cropCtx =
+    cropCanvas.getContext(
+        "2d"
+    );
+
+
+function openCrop(mode) {
+
+    cropMode =
+        mode;
+
+    cropImage =
+        mode === "source"
+            ? sourceImage
+            : targetImage;
+
+    if (
+        !cropImage &&
+        mode === "source"
+    ) {
+        cropImage =
+            sourceCanvas;
+    }
+
+    if (
+        !cropImage &&
+        mode === "target"
+    ) {
+        cropImage =
+            targetCanvas;
+    }
+
+    if (!cropImage)
+        return;
+
+    document
+        .getElementById("cropX")
+        .value = 50;
+
+    document
+        .getElementById("cropY")
+        .value = 50;
+
+    document
+        .getElementById("cropZoom")
+        .value = 1;
+
+    cropOverlay
+        .classList
+        .add("open");
+
+    updateCropPreview();
+}
+
+
+function updateCropPreview() {
+
+    if (!cropImage)
+        return;
+
+    const x =
+        Number(
+            document
+                .getElementById("cropX")
+                .value
+        ) / 100;
+
+    const y =
+        Number(
+            document
+                .getElementById("cropY")
+                .value
+        ) / 100;
+
+    const zoom =
+        Number(
+            document
+                .getElementById("cropZoom")
+                .value
+        );
+
+    const image =
+        makeSquare(
+            cropImage,
+            x,
+            y,
+            zoom
+        );
+
+    cropCtx.clearRect(
+        0,
+        0,
+        512,
+        512
+    );
+
+    cropCtx.drawImage(
+        image,
+        0,
+        0
+    );
+}
+
+
+document
+    .getElementById("sourceCrop")
+    .addEventListener(
+        "click",
+        () =>
+            openCrop("source")
+    );
+
+
+document
+    .getElementById("targetCrop")
+    .addEventListener(
+        "click",
+        () =>
+            openCrop("target")
+    );
+
+
+for (
+    const id
+    of [
+        "cropX",
+        "cropY",
+        "cropZoom"
+    ]
+) {
+
+    document
+        .getElementById(id)
+        .addEventListener(
+            "input",
+            updateCropPreview
+        );
+}
+
+
+document
+    .getElementById("cropCancel")
+    .addEventListener(
+        "click",
+        () => {
+
+            cropOverlay
+                .classList
+                .remove("open");
+
+        }
+    );
+
+
+document
+    .getElementById("cropApply")
+    .addEventListener(
+        "click",
+        () => {
+
+            if (!cropImage)
+                return;
+
+            const x =
+                Number(
+                    document
+                        .getElementById("cropX")
+                        .value
+                ) / 100;
+
+            const y =
+                Number(
+                    document
+                        .getElementById("cropY")
+                        .value
+                ) / 100;
+
+            const zoom =
+                Number(
+                    document
+                        .getElementById("cropZoom")
+                        .value
+                );
+
+            const cropped =
+                makeSquare(
+                    cropImage,
+                    x,
+                    y,
+                    zoom
+                );
+
+            if (
+                cropMode ===
+                "source"
+            ) {
+
+                sourceCanvas =
+                    cropped;
+
+                sourcePreview.src =
+                    cropped.toDataURL();
+
+            } else {
+
+                targetCanvas =
+                    cropped;
+
+                targetPreview.src =
+                    cropped.toDataURL();
+            }
+
+            particles = [];
+
+            cropOverlay
+                .classList
+                .remove("open");
+
+            reset();
+        }
+    );
+
+
+/* ============================================================
+   ADVANCED
+   ============================================================ */
+
+document
+    .getElementById("advancedButton")
+    .addEventListener(
+        "click",
+        () => {
+
+            document
+                .getElementById("advanced")
+                .classList
+                .toggle("open");
+        }
+    );
+
+
+proximityInput
+    .addEventListener(
+        "input",
+        () => {
+
+            proximityValue.textContent =
+                proximityInput.value;
+        }
+    );
+
+
+resolutionInput
+    .addEventListener(
+        "change",
+        () => {
+
+            getResolution();
+
+            particles = [];
+
+            if (!drawingMode)
+                reset();
+        }
+    );
+
+
+algorithmInput
+    .addEventListener(
+        "change",
+        () => {
+
+            particles = [];
+
+            if (!drawingMode)
+                reset();
+        }
+    );
+
+
+/* ============================================================
+   REALTIME DRAWING MODE
+   ============================================================ */
+
+/*
+ * This follows the actual desktop Obamify drawing concept
+ * much more closely than simply drawing on top of the image.
+ *
+ * The pixels are persistent particles.
+ *
+ * Drawing changes the COLOR assigned to the particle under
+ * the brush, while the realtime optimizer changes only where
+ * those pixels are located.
+ *
+ * Therefore:
+ *
+ *   normal mode -> pixels only move
+ *   drawing mode -> brush changes selected pixel colors,
+ *                   then pixels continuously rearrange
+ */
+
+const DRAW_COLORS = {
+    black: {
+        r: 0,
+        g: 0,
+        b: 0
+    },
+
+    cyan: {
+        r: 134,
+        g: 217,
+        b: 227
+    },
+
+    brown: {
+        r: 56,
+        g: 50,
+        b: 50
+    },
+
+    skin: {
+        r: 212,
+        g: 153,
+        b: 118
+    },
+
+    red: {
+        r: 121,
+        g: 48,
+        b: 37
+    }
+};
+
+
+function enterDrawingMode() {
+
+    if (drawingMode)
+        return;
+
+    if (!sourceCanvas)
+        return;
+
+    if (!targetCanvas)
+        return;
+
+    playing = false;
+
+    if (animationFrame)
+        cancelAnimationFrame(
+            animationFrame
+        );
+
+    animationFrame = null;
+
+    /*
+     * Drawing mode starts from a blank canvas in the
+     * original application, but uses the target as the
+     * destination. We use the existing source pixels
+     * initially so the web version is immediately usable.
+     */
+
+    if (!particles.length) {
+
+        buildPixels();
+    }
+
+    drawingMode = true;
+
+    document.body.classList.add(
+        "drawing"
+    );
+
+    drawControls.classList.add(
+        "open"
+    );
+
+    drawingButton.textContent =
+        "✏ drawing";
+
+    document
+        .getElementById("generate")
+        .disabled = true;
+
+    document
+        .getElementById("play")
+        .disabled = true;
+
+    /*
+     * Start the realtime optimizer.
+     */
+
+    startDrawingOptimizer();
+
+    draw();
+}
+
+
+function exitDrawingMode() {
+
+    if (!drawingMode)
+        return;
+
+    drawingMode = false;
+
+    drawingPointer = false;
+    lastDrawPoint = null;
+
+    document.body.classList.remove(
+        "drawing"
+    );
+
+    drawControls.classList.remove(
+        "open"
+    );
+
+    drawingButton.textContent =
+        "✏ draw";
+
+    document
+        .getElementById("generate")
+        .disabled = false;
+
+    document
+        .getElementById("play")
+        .disabled = false;
+
+    if (drawingRAF) {
+
+        cancelAnimationFrame(
+            drawingRAF
+        );
+
+        drawingRAF = null;
+    }
+
+    draw();
+}
+
+
+function resetDrawingCanvas() {
+
+    particles = [];
+
+    buildPixels();
+
+    drawIteration = 0;
+
+    drawingDirty = true;
+
+    draw();
+}
+
+
+/* ============================================================
+   DRAWING BRUSH
+   ============================================================ */
+
+function screenToParticleSpace(
+    clientX,
+    clientY
+) {
+
+    const width =
+        innerWidth;
+
+    const height =
+        innerHeight;
+
+    const size =
+        Math.min(
+            width,
+            height
+        ) * .86;
+
+    const left =
+        (width - size) / 2;
+
+    const top =
+        (height - size) / 2;
+
+    const resolution =
+        getResolution();
+
+    const cell =
+        size /
+        resolution;
+
+    const x =
+        (
+            clientX -
+            left
+        ) / cell;
+
+    const y =
+        (
+            clientY -
+            top
+        ) / cell;
+
+    return {
+        x,
+        y
+    };
+}
+
+
+function distancePointToSegment(
+    px,
+    py,
+    x0,
+    y0,
+    x1,
+    y1
+) {
+
+    const dx =
+        x1 - x0;
+
+    const dy =
+        y1 - y0;
+
+    if (
+        dx === 0 &&
+        dy === 0
+    ) {
+
+        return Math.hypot(
+            px - x0,
+            py - y0
+        );
+    }
+
+    const t =
+        (
+            (
+                px - x0
+            ) * dx +
+            (
+                py - y0
+            ) * dy
+        ) /
+        (
+            dx * dx +
+            dy * dy
+        );
+
+    const clamped =
+        Math.max(
+            0,
+            Math.min(
+                1,
+                t
+            )
+        );
+
+    const x =
+        x0 +
+        dx * clamped;
+
+    const y =
+        y0 +
+        dy * clamped;
+
+    return Math.hypot(
+        px - x,
+        py - y
+    );
+}
+
+
+function applyDrawingStroke(
+    x0,
+    y0,
+    x1,
+    y1
+) {
+
+    if (!particles.length)
+        return;
+
+    /*
+     * Original Obamify uses approximately 30px black
+     * and 50px colored drawing thickness, with a soft
+     * 10px transition.
+     *
+     * Our coordinates are in grid cells, so scale it
+     * proportionally.
+     */
+
+    const resolution =
+        getResolution();
+
+    const baseThickness =
+        drawingColor.r === 0 &&
+        drawingColor.g === 0 &&
+        drawingColor.b === 0
+            ? 30
+            : 50;
+
+    const thickness =
+        baseThickness *
+        resolution /
+        128;
+
+    const transition =
+        10 *
+        resolution /
+        128;
+
+    /*
+     * Same conceptual stroke grouping used by the
+     * original drawing implementation.
+     */
+
+    const strokeId =
+        ++drawIteration;
+
+    for (
+        const particle
+        of particles
+    ) {
+
+        const distance =
+            distancePointToSegment(
+                particle.ox,
+                particle.oy,
+                x0,
+                y0,
+                x1,
+                y1
+            );
+
+        if (
+            distance >
+            thickness +
+            transition
+        )
+            continue;
+
+        const alpha =
+            Math.max(
+                0,
+                Math.min(
+                    1,
+                    (
+                        thickness +
+                        transition -
+                        distance
+                    ) /
+                    Math.max(
+                        1,
+                        transition
+                    )
+                )
+            ) * .5;
+
+        /*
+         * Same alpha blending idea as the original:
+         *
+         * new = old * (1-a) + brush * a
+         */
+
+        particle.r =
+            Math.round(
+                (
+                    1 - alpha
+                ) * particle.r +
+                alpha *
+                drawingColor.r
+            );
+
+        particle.g =
+            Math.round(
+                (
+                    1 - alpha
+                ) * particle.g +
+                alpha *
+                drawingColor.g
+            );
+
+        particle.b =
+            Math.round(
+                (
+                    1 - alpha
+                ) * particle.b +
+                alpha *
+                drawingColor.b
+            );
+
+        particle.age = 0;
+        particle.strokeId =
+            strokeId;
+    }
+
+    drawingDirty = true;
+
+    draw();
+}
+
+
+/* ============================================================
+   POINTER EVENTS
+   ============================================================ */
+
+canvas.addEventListener(
+    "pointerdown",
+    event => {
+
+        if (!drawingMode)
+            return;
+
+        if (
+            event.button !== 0 &&
+            event.pointerType !== "touch"
+        )
+            return;
+
+        event.preventDefault();
+
+        drawingPointer = true;
+
+        lastDrawPoint =
+            screenToParticleSpace(
+                event.clientX,
+                event.clientY
+            );
+
+        applyDrawingStroke(
+            lastDrawPoint.x,
+            lastDrawPoint.y,
+            lastDrawPoint.x,
+            lastDrawPoint.y
+        );
+
+        try {
+            canvas.setPointerCapture(
+                event.pointerId
+            );
+        } catch {}
+    },
+    {
+        passive: false
+    }
+);
+
+
+canvas.addEventListener(
+    "pointermove",
+    event => {
+
+        if (!drawingMode)
+            return;
+
+        if (!drawingPointer)
+            return;
+
+        event.preventDefault();
+
+        const point =
+            screenToParticleSpace(
+                event.clientX,
+                event.clientY
+            );
+
+        if (!lastDrawPoint) {
+
+            lastDrawPoint =
+                point;
+
+            return;
+        }
+
+        applyDrawingStroke(
+            lastDrawPoint.x,
+            lastDrawPoint.y,
+            point.x,
+            point.y
+        );
+
+        lastDrawPoint =
+            point;
+    },
+    {
+        passive: false
+    }
+);
+
+
+function endDrawingPointer() {
+
+    drawingPointer = false;
+    lastDrawPoint = null;
+}
+
+
+canvas.addEventListener(
+    "pointerup",
+    endDrawingPointer
+);
+
+canvas.addEventListener(
+    "pointercancel",
+    endDrawingPointer
+);
+
+canvas.addEventListener(
+    "pointerleave",
+    event => {
+
+        if (
+            drawingPointer &&
+            event.pointerType === "mouse"
+        ) {
+
+            endDrawingPointer();
+        }
+    }
+);
+
+
+/* ============================================================
+   REALTIME DRAWING OPTIMIZER
+   ============================================================ */
+
+function startDrawingOptimizer() {
+
+    if (drawingRAF)
+        cancelAnimationFrame(
+            drawingRAF
+        );
+
+    let lastTime =
+        performance.now();
+
+    function frame(time) {
+
+        if (!drawingMode)
+            return;
+
+        const dt =
+            Math.min(
+                50,
+                time - lastTime
+            );
+
+        lastTime = time;
+
+        /*
+         * Do a bounded amount of work every frame.
+         *
+         * This is what makes drawing mode genuinely realtime
+         * instead of rebuilding the whole assignment after
+         * every stroke.
+         */
+
+        if (
+            particles.length &&
+            targetCanvas
+        ) {
+
+            const resolution =
+                getResolution();
+
+            /*
+             * Build target pixels once per frame only.
+             * At normal drawing resolutions this is cheap.
+             */
+
+            const {
+                targetPixels
+            } =
+                getPixelGrid(
+                    sourceCanvas,
+                    targetCanvas,
+                    resolution
+                );
+
+            /*
+             * Construct a temporary state from the current
+             * particle arrangement.
+             */
+
+            const state = {
+                pixels:
+                    particles.map(
+                        p => ({
+                            srcX:
+                                p.ox -
+                                .5,
+
+                            srcY:
+                                p.oy -
+                                .5,
+
+                            r:
+                                p.r,
+
+                            g:
+                                p.g,
+
+                            b:
+                                p.b,
+
+                            h: 0
+                        })
+                    ),
+
+                resolution,
+
+                /*
+                 * Drawing mode intentionally keeps movement
+                 * local, just like the original drawing mode.
+                 */
+
+                maxDist:
+                    Math.max(
+                        4,
+                        Math.min(
+                            resolution / 4,
+                            resolution *
+                            (
+                                .99 **
+                                Math.floor(
+                                    drawIteration /
+                                    30
+                                )
+                            )
+                        )
+                    ),
+
+                swapsMade: 0
+            };
+
+            /*
+             * Calculate current heuristic for every target slot.
+             */
+
+            const proximity =
+                Number(
+                    proximityInput.value
+                ) || 13;
+
+            for (
+                let i = 0;
+                i < state.pixels.length;
+                i++
+            ) {
+
+                const p =
+                    state.pixels[i];
+
+                const t =
+                    targetPixels[i];
+
+                p.h =
+                    heuristic(
+                        p.srcX,
+                        p.srcY,
+                        t.x,
+                        t.y,
+                        p,
+                        t,
+                        t.weight,
+                        proximity
+                    );
+            }
+
+            /*
+             * Keep the amount of CPU work bounded.
+             *
+             * Mobile devices get less work.
+             */
+
+            const mobile =
+                innerWidth < 700;
+
+            const iterations =
+                mobile
+                    ? Math.min(
+                        3000,
+                        particles.length * 8
+                    )
+                    : Math.min(
+                        9000,
+                        particles.length * 16
+                    );
+
+            geneticStepDrawing(
+                state,
+                targetPixels,
+                iterations
+            );
+
+            /*
+             * Convert the assignment back into particle
+             * destination positions.
+             *
+             * RGB remains attached to the same source particle.
+             */
+
+            for (
+                let i = 0;
+                i < state.pixels.length;
+                i++
+            ) {
+
+                const p =
+                    state.pixels[i];
+
+                particles[i].tx =
+                    i %
+                    resolution +
+                    .5;
+
+                particles[i].ty =
+                    Math.floor(
+                        i /
+                        resolution
+                    ) +
+                    .5;
+            }
+
+            /*
+             * The optimizer swaps particle objects in the
+             * target array, so restore the source-indexed
+             * particle order while preserving their colors.
+             */
+
+            const arranged =
+                new Array(
+                    particles.length
+                );
+
+            for (
+                let i = 0;
+                i < state.pixels.length;
+                i++
+            ) {
+
+                const p =
+                    state.pixels[i];
+
+                /*
+                 * Find the particle whose source coordinates
+                 * correspond to this source pixel.
+                 */
+
+                const sourceIndex =
+                    Math.round(
+                        p.srcY
+                    ) *
+                    resolution +
+                    Math.round(
+                        p.srcX
+                    );
+
+                if (
+                    sourceIndex >= 0 &&
+                    sourceIndex <
+                    arranged.length
+                ) {
+
+                    const particle =
+                        particles.find(
+                            candidate =>
+                                Math.round(
+                                    candidate.ox -
+                                    .5
+                                ) ===
+                                Math.round(
+                                    p.srcX
+                                ) &&
+                                Math.round(
+                                    candidate.oy -
+                                    .5
+                                ) ===
+                                Math.round(
+                                    p.srcY
+                                )
+                        );
+
+                    if (particle)
+                        arranged[
+                            sourceIndex
+                        ] = particle;
+                }
+            }
+
+            /*
+             * More reliable assignment update:
+             *
+             * state.pixels represents target slots, therefore
+             * simply copy each source particle's target position.
+             */
+
+            for (
+                let targetIndex = 0;
+                targetIndex <
+                state.pixels.length;
+                targetIndex++
+            ) {
+
+                const p =
+                    state.pixels[
+                        targetIndex
+                    ];
+
+                const sourceIndex =
+                    Math.round(
+                        p.srcY
+                    ) *
+                    resolution +
+                    Math.round(
+                        p.srcX
+                    );
+
+                if (
+                    sourceIndex >= 0 &&
+                    sourceIndex <
+                    particles.length
+                ) {
+
+                    particles[
+                        sourceIndex
+                    ].tx =
+                        targetIndex %
+                        resolution +
+                        .5;
+
+                    particles[
+                        sourceIndex
+                    ].ty =
+                        Math.floor(
+                            targetIndex /
+                            resolution
+                        ) +
+                        .5;
+                }
+            }
+        }
+
+        draw();
+
+        drawingRAF =
+            requestAnimationFrame(
+                frame
+            );
+    }
+
+    drawingRAF =
+        requestAnimationFrame(
+            frame
+        );
+}
+
+
+function geneticStepDrawing(
+    state,
+    targetPixels,
+    iterations
+) {
+
+    const pixels =
+        state.pixels;
+
+    const resolution =
+        state.resolution;
+
+    const proximity =
+        Number(
+            proximityInput.value
+        ) || 13;
+
+    for (
+        let iteration = 0;
+        iteration < iterations;
+        iteration++
+    ) {
+
+        const a =
+            Math.floor(
+                Math.random() *
+                pixels.length
+            );
+
+        const ax =
+            a %
+            resolution;
+
+        const ay =
+            Math.floor(
+                a /
+                resolution
+            );
+
+        const radius =
+            Math.max(
+                2,
+                Math.floor(
+                    state.maxDist
+                )
+            );
+
+        const bx =
+            Math.max(
+                0,
+                Math.min(
+                    resolution - 1,
+                    ax +
+                    randomInt(
+                        -radius,
+                        radius
+                    )
+                )
+            );
+
+        const by =
+            Math.max(
+                0,
+                Math.min(
+                    resolution - 1,
+                    ay +
+                    randomInt(
+                        -radius,
+                        radius
+                    )
+                )
+            );
+
+        const b =
+            by *
+            resolution +
+            bx;
+
+        if (a === b)
+            continue;
+
+        const pa =
+            pixels[a];
+
+        const pb =
+            pixels[b];
+
+        const ta =
+            targetPixels[a];
+
+        const tb =
+            targetPixels[b];
+
+        /*
+         * Same local-swap calculation as the fast algorithm.
+         */
+
+        const aOnB =
+            heuristic(
+                pa.srcX,
+                pa.srcY,
+                tb.x,
+                tb.y,
+                pa,
+                tb,
+                tb.weight,
+                proximity
+            );
+
+        const bOnA =
+            heuristic(
+                pb.srcX,
+                pb.srcY,
+                ta.x,
+                ta.y,
+                pb,
+                ta,
+                ta.weight,
+                proximity
+            );
+
+        /*
+         * Drawing-mode stroke grouping gives pixels touched
+         * by the same stroke a strong tendency to remain close.
+         */
+
+        let strokeRewardA = 0;
+        let strokeRewardB = 0;
+
+        if (
+            pa.strokeId !== 0 &&
+            pa.strokeId ===
+            pb.strokeId
+        ) {
+
+            const reward =
+                1000000000;
+
+            strokeRewardA =
+                reward;
+
+            strokeRewardB =
+                reward;
+        }
+
+        const improvementA =
+            (
+                pa.h -
+                strokeRewardA
+            ) -
+            (
+                bOnA -
+                strokeRewardA
+            );
+
+        const improvementB =
+            (
+                pb.h -
+                strokeRewardB
+            ) -
+            (
+                aOnB -
+                strokeRewardB
+            );
+
+        if (
+            improvementA +
+            improvementB >
+            0
+        ) {
+
+            pixels[a] =
+                pb;
+
+            pixels[b] =
+                pa;
+
+            pixels[a].h =
+                bOnA;
+
+            pixels[b].h =
+                aOnB;
+        }
+    }
+
+    state.maxDist =
+        Math.max(
+            2,
+            state.maxDist * .99
+        );
+}
+
+
+/* ============================================================
+   DRAWING CONTROLS
+   ============================================================ */
+
+drawingButton.addEventListener(
+    "click",
+    () => {
+
+        if (drawingMode)
+            exitDrawingMode();
+        else
+            enterDrawingMode();
+    }
+);
+
+
+exitDrawing.addEventListener(
+    "click",
+    exitDrawingMode
+);
+
+
+function selectDrawingColor(
+    button,
+    color
+) {
+
+    drawingColor =
+        color;
+
+    document
+        .querySelectorAll(
+            ".color-button"
+        )
+        .forEach(
+            element =>
+                element.classList.remove(
+                    "selected"
+                )
+        );
+
+    button.classList.add(
+        "selected"
+    );
+}
+
+
+document
+    .getElementById("drawBlack")
+    .addEventListener(
+        "click",
+        event =>
+            selectDrawingColor(
+                event.currentTarget,
+                DRAW_COLORS.black
+            )
+    );
+
+
+document
+    .getElementById("drawCyan")
+    .addEventListener(
+        "click",
+        event =>
+            selectDrawingColor(
+                event.currentTarget,
+                DRAW_COLORS.cyan
+            )
+    );
+
+
+document
+    .getElementById("drawBrown")
+    .addEventListener(
+        "click",
+        event =>
+            selectDrawingColor(
+                event.currentTarget,
+                DRAW_COLORS.brown
+            )
+    );
+
+
+document
+    .getElementById("drawSkin")
+    .addEventListener(
+        "click",
+        event =>
+            selectDrawingColor(
+                event.currentTarget,
+                DRAW_COLORS.skin
+            )
+    );
+
+
+document
+    .getElementById("drawRed")
+    .addEventListener(
+        "click",
+        event =>
+            selectDrawingColor(
+                event.currentTarget,
+                DRAW_COLORS.red
+            )
+    );
+
+
+/* ============================================================
+   SAVE
+   ============================================================ */
+
+document
+    .getElementById("save")
+    .addEventListener(
+        "click",
+        async () => {
+
+            if (drawingMode)
+                return;
+
+            if (!particles.length)
+                buildPixels();
+
+            if (
+                !canvas.captureStream ||
+                !window.MediaRecorder
+            ) {
+
+                alert(
+                    "Animation export is not supported by this browser."
+                );
+
+                return;
+            }
+
+            const stream =
+                canvas.captureStream(30);
+
+            let mime =
+                "video/webm";
+
+            if (
+                MediaRecorder.isTypeSupported(
+                    "video/webm;codecs=vp9"
+                )
+            ) {
+
+                mime =
+                    "video/webm;codecs=vp9";
+            }
+
+            const recorder =
+                new MediaRecorder(
+                    stream,
+                    {
+                        mimeType: mime
+                    }
+                );
+
+            const chunks = [];
+
+            recorder.ondataavailable =
+                event => {
+
+                    if (
+                        event.data.size
+                    ) {
+
+                        chunks.push(
+                            event.data
+                        );
+                    }
+                };
+
+            recorder.onstop =
+                () => {
+
+                    const blob =
+                        new Blob(
+                            chunks,
+                            {
+                                type: mime
+                            }
+                        );
+
+                    const url =
+                        URL.createObjectURL(
+                            blob
+                        );
+
+                    const a =
+                        document.createElement(
+                            "a"
+                        );
+
+                    a.href =
+                        url;
+
+                    a.download =
+                        "obamify.webm";
+
+                    document.body.appendChild(a);
+
+                    a.click();
+
+                    a.remove();
+
+                    setTimeout(
+                        () =>
+                            URL.revokeObjectURL(
+                                url
+                            ),
+                        1000
+                    );
+                };
+
+            recorder.start();
+
+            const start =
+                performance.now();
+
+            function record(time) {
+
+                const p =
+                    Math.min(
+                        1,
+                        (
+                            time -
+                            start
+                        ) / 5000
+                    );
+
+                draw(p);
+
+                if (p < 1) {
+
+                    requestAnimationFrame(
+                        record
+                    );
+
+                } else {
+
+                    setTimeout(
+                        () =>
+                            recorder.stop(),
+                        100
+                    );
+                }
+            }
+
+            requestAnimationFrame(
+                record
+            );
+        }
+    );
+
+
+/* ============================================================
+   INITIALIZATION
+   ============================================================ */
+
+async function init() {
+
+    sourceCanvas =
+        createDefaultSource();
+
+    sourcePreview.src =
+        sourceCanvas.toDataURL();
+
+    /*
+     * Use the actual Obamify target when available.
+     */
+
+    try {
+
+        targetImage =
+            await loadURL(
+                "https://raw.githubusercontent.com/Spu7Nix/obamify/main/assets/target256.png"
+            );
+
+        targetCanvas =
+            makeSquare(
+                targetImage
+            );
+
+    } catch {
+
+        try {
+
+            targetImage =
+                await loadURL(
+                    "https://raw.githubusercontent.com/Spu7Nix/obamify/main/assets/obama.png"
+                );
+
+            targetCanvas =
+                makeSquare(
+                    targetImage
+                );
+
+        } catch {
+
+            targetCanvas =
+                createFallbackObama();
+        }
+    }
+
+    targetPreview.src =
+        targetCanvas.toDataURL();
+
+    resizeCanvas();
+}
+
+
+init();
+
+</script>
+
+</body>
+</html>
